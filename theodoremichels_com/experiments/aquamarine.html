@@ -1,0 +1,169 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Aquamarine</title>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+
+    <link href="http://fonts.googleapis.com/css?family=Titillium+Web:400,300,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+    
+    <script src="../js/lib/p5.min.js"></script>
+    <script src="../js/lib/jquery-1.11.3.min.js"></script>
+
+    <script src="../js/experiments/aquamarine.js"></script>
+    
+    
+</head>
+
+<body>
+    <div id="p5Canvas"></div>
+
+    <div id="aquamarine" class="p5Canvas"></div>
+    <div class="p5Box">
+        <h3 class="sourceCodeButton">source<br>{...}</h3>
+        <div class="formattedCode">
+            <!-- HTML generated using hilite.me -->
+            <div style="background: #f8f8f8; overflow:auto;width:auto;height:480px;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #408080; font-style: italic">/*</span>
+<span style="color: #408080; font-style: italic">Aquamarine</span>
+<span style="color: #408080; font-style: italic"> Procedurally Generated Banner Graphics</span>
+<span style="color: #408080; font-style: italic"> Theodore Michels 2015</span>
+<span style="color: #408080; font-style: italic"> Last updated: 07/30/2015</span>
+<span style="color: #408080; font-style: italic"> */</span>
+
+<span style="color: #408080; font-style: italic">// Put this in a function instance so that everything is out of the global namespace</span>
+<span style="color: #008000; font-weight: bold">var</span> aquamarine <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> (a) {
+    <span style="color: #408080; font-style: italic">// An array of &quot;brushes&quot;, which will create all of the strokes</span>
+    <span style="color: #008000; font-weight: bold">var</span> numBrushes <span style="color: #666666">=</span> <span style="color: #666666">50</span>;
+    <span style="color: #008000; font-weight: bold">var</span> theBrushes <span style="color: #666666">=</span> [];
+
+    a.setup <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        canvas <span style="color: #666666">=</span> a.createCanvas(a.windowWidth <span style="color: #666666">*</span> <span style="color: #666666">0.8</span>, <span style="color: #666666">480</span>);
+        a.smooth();
+
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numBrushes; i<span style="color: #666666">++</span>) {
+            theBrushes[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Brush(a.random(a.width), a.random(a.height)); <span style="color: #408080; font-style: italic">// Initialize all of the brushes at random positions</span>
+        }
+        a.background(<span style="color: #666666">0</span>); <span style="color: #408080; font-style: italic">// Initialize the background.</span>
+    }
+
+    a.draw <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () { <span style="color: #408080; font-style: italic">// Note that no background is drawn here - previous frames are preserved.</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numBrushes; i<span style="color: #666666">++</span>) {
+            theBrushes[i].update(); <span style="color: #408080; font-style: italic">// Update all of the brushes.</span>
+            <span style="color: #008000; font-weight: bold">if</span> (theBrushes[i].strokeLifetime <span style="color: #666666">&gt;</span> theBrushes[i].strokeDuration <span style="color: #666666">*</span> <span style="color: #666666">2</span>) {
+                theBrushes[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Brush(a.random(a.width), a.random(a.height)); <span style="color: #408080; font-style: italic">// If a brush has been drawing for too long, then re-initialize it.</span>
+                
+            }
+        }
+        a.strokeWeight(<span style="color: #666666">20</span>);
+        a.stroke(<span style="color: #666666">0</span>);
+        a.line(<span style="color: #666666">0</span>,<span style="color: #666666">0</span>, a.width, <span style="color: #666666">0</span>);
+        a.line(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #666666">0</span>, a.height);
+        a.line(<span style="color: #666666">0</span>, a.height, a.width, a.height);
+        a.line(a.width, <span style="color: #666666">0</span>, a.width, a.height);
+    }
+
+    <span style="color: #408080; font-style: italic">// Consists of several &quot;bristles&quot;, which are just ellipses of different sizes and colors,</span>
+    <span style="color: #408080; font-style: italic">// which appear and disappear at different rates.</span>
+    <span style="color: #008000; font-weight: bold">function</span> Brush(startX, startY) {
+        <span style="color: #008000; font-weight: bold">this</span>.numBristles <span style="color: #666666">=</span> <span style="color: #666666">25</span>; <span style="color: #408080; font-style: italic">// How many different points are drawing lines?</span>
+
+        <span style="color: #008000; font-weight: bold">this</span>.brushPosition <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(startX, startY); <span style="color: #408080; font-style: italic">// The central brush position.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.brushMovement <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(); <span style="color: #408080; font-style: italic">// The movement vector.</span>
+
+        <span style="color: #008000; font-weight: bold">this</span>.bristlePositions <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// The position of each &quot;bristle&quot;</span>
+        <span style="color: #008000; font-weight: bold">this</span>.bristleSpeeds <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// Each bristle increases in size at a different rate.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.bristleSizes <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// Keeps track of the current size of each bristle.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.bristleColors <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// Each bristle should have a slightly different color.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.startOffsets <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// Each bristle should start drawing at different times.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.maxBristleSize <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// The maximum size of this bristle.</span>
+
+        <span style="color: #008000; font-weight: bold">this</span>.brushWidth <span style="color: #666666">=</span> a.random(<span style="color: #666666">30</span>, <span style="color: #666666">60</span>); <span style="color: #408080; font-style: italic">// How wide is the brush?</span>
+
+        <span style="color: #008000; font-weight: bold">this</span>.strokeDuration <span style="color: #666666">=</span> a.random(<span style="color: #666666">100</span>, <span style="color: #666666">400</span>); <span style="color: #408080; font-style: italic">// When should the stroke start tapering off?</span>
+        <span style="color: #008000; font-weight: bold">this</span>.strokeLifetime <span style="color: #666666">=</span> <span style="color: #666666">0</span>; <span style="color: #408080; font-style: italic">// How long has the stroke been...&quot;stroking&quot;?</span>
+
+        <span style="color: #008000; font-weight: bold">this</span>.moveCounter <span style="color: #666666">=</span> <span style="color: #666666">0</span>; <span style="color: #408080; font-style: italic">// For drawing curves.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.moveRate <span style="color: #666666">=</span> a.random(<span style="color: #666666">-0.04</span>, <span style="color: #666666">0.04</span>); <span style="color: #408080; font-style: italic">// How fast is the curve drawn - also affects the &quot;tightness&quot; of the curve</span>
+        <span style="color: #408080; font-style: italic">// Random colors.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.colorR <span style="color: #666666">=</span> a.random(<span style="color: #666666">0</span>, <span style="color: #666666">100</span>);
+        <span style="color: #008000; font-weight: bold">this</span>.colorG <span style="color: #666666">=</span> a.random(<span style="color: #666666">100</span>, <span style="color: #666666">255</span>);
+        <span style="color: #008000; font-weight: bold">this</span>.colorB <span style="color: #666666">=</span> a.random(<span style="color: #666666">180</span>, <span style="color: #666666">255</span>);
+
+        <span style="color: #408080; font-style: italic">// Each bristle is special and unique - like a snowflake!</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> <span style="color: #008000; font-weight: bold">this</span>.numBristles; i<span style="color: #666666">++</span>) {
+            <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+            <span style="color: #008000; font-weight: bold">this</span>.maxBristleSize[i] <span style="color: #666666">=</span> a.random(<span style="color: #666666">1</span>, <span style="color: #666666">3.0</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.bristleSpeeds[i] <span style="color: #666666">=</span> a.random(<span style="color: #666666">0.01</span>, <span style="color: #666666">0.2</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.startOffsets[i] <span style="color: #666666">=</span> a.random(<span style="color: #666666">0</span>, <span style="color: #666666">60</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.bristleColors[i] <span style="color: #666666">=</span> a.color(a.random(<span style="color: #008000; font-weight: bold">this</span>.colorR <span style="color: #666666">/</span> <span style="color: #666666">2</span>, <span style="color: #008000; font-weight: bold">this</span>.colorR), a.random(<span style="color: #008000; font-weight: bold">this</span>.colorG <span style="color: #666666">/</span> <span style="color: #666666">2</span>, <span style="color: #008000; font-weight: bold">this</span>.colorG), a.random(<span style="color: #008000; font-weight: bold">this</span>.colorB <span style="color: #666666">/</span> <span style="color: #666666">2</span>, <span style="color: #008000; font-weight: bold">this</span>.colorB), <span style="color: #666666">100</span>);
+        }
+
+        <span style="color: #008000; font-weight: bold">this</span>.update <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+            <span style="color: #008000; font-weight: bold">this</span>.moveCounter <span style="color: #666666">+=</span> <span style="color: #008000; font-weight: bold">this</span>.moveRate; <span style="color: #408080; font-style: italic">// Increment the counter.</span>
+            <span style="color: #008000; font-weight: bold">this</span>.brushMovement <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(a.sin(<span style="color: #008000; font-weight: bold">this</span>.moveCounter), a.cos(<span style="color: #008000; font-weight: bold">this</span>.moveCounter)); <span style="color: #408080; font-style: italic">// The brush moves in a circle.</span>
+            <span style="color: #008000; font-weight: bold">this</span>.strokeLifetime<span style="color: #666666">++</span>; <span style="color: #408080; font-style: italic">// How many frames has this been around?</span>
+            <span style="color: #008000; font-weight: bold">this</span>.brushPosition.add(<span style="color: #008000; font-weight: bold">this</span>.brushMovement); <span style="color: #408080; font-style: italic">// Add the movement vector to the current position.</span>
+            <span style="color: #008000; font-weight: bold">this</span>.perpVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">-</span><span style="color: #008000; font-weight: bold">this</span>.brushMovement.y, <span style="color: #008000; font-weight: bold">this</span>.brushMovement.x); <span style="color: #408080; font-style: italic">// Get a vector perpendicular to the forward vector.</span>
+            <span style="color: #008000; font-weight: bold">this</span>.perpVector.normalize();
+
+            a.noStroke();
+            <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> <span style="color: #008000; font-weight: bold">this</span>.numBristles; i<span style="color: #666666">++</span>) {
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.strokeLifetime <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.startOffsets[i]) { <span style="color: #408080; font-style: italic">// If the stroke has been around longer than its offset, start increasing its size.</span>
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.strokeLifetime <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.strokeDuration) { <span style="color: #408080; font-style: italic">// If the lifetime is greater than the duration, start decreasing the stroke size.</span>
+                        <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.strokeLifetime <span style="color: #666666">-</span> <span style="color: #008000; font-weight: bold">this</span>.strokeDuration <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.startOffsets[i]) { <span style="color: #408080; font-style: italic">// Use the start offset again so that strokes start tapering at different times.</span>
+                            <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">-=</span> <span style="color: #008000; font-weight: bold">this</span>.bristleSpeeds[i];
+                        }
+                    } <span style="color: #008000; font-weight: bold">else</span> {
+                        <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">+=</span> <span style="color: #008000; font-weight: bold">this</span>.bristleSpeeds[i]; <span style="color: #408080; font-style: italic">// Increase the bristle size.</span>
+                        <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">+=</span> a.random(<span style="color: #666666">-0.4</span>, <span style="color: #666666">0.4</span>); <span style="color: #408080; font-style: italic">// Add random varation to bristle size for a more &quot;organic&quot; look.</span>
+                    }
+
+                    <span style="color: #408080; font-style: italic">// Clamp the bristle size between 0 and the max.</span>
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.maxBristleSize[i]) {
+                        <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.maxBristleSize[i];
+                    }
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span>) {
+                        <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i] <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+                    }                    
+                }
+
+                <span style="color: #008000; font-weight: bold">this</span>.bristlePositions[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.perpVector.copy();
+                <span style="color: #408080; font-style: italic">// Arrange bristles perpendicular to the forward vector at varying distances.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.bristleOffset <span style="color: #666666">=</span> (i <span style="color: #666666">+</span> <span style="color: #666666">0.5</span> <span style="color: #666666">-</span> <span style="color: #008000; font-weight: bold">this</span>.numBristles <span style="color: #666666">/</span> <span style="color: #666666">2.0</span>) <span style="color: #666666">*</span> (<span style="color: #008000; font-weight: bold">this</span>.brushWidth <span style="color: #666666">/</span> <span style="color: #008000; font-weight: bold">this</span>.numBristles);
+                <span style="color: #008000; font-weight: bold">this</span>.bristlePositions[i].mult(<span style="color: #008000; font-weight: bold">this</span>.bristleOffset);
+                <span style="color: #008000; font-weight: bold">this</span>.bristlePositions[i].add(<span style="color: #008000; font-weight: bold">this</span>.brushPosition); <span style="color: #408080; font-style: italic">// Add the offset vector to the current position.</span>
+
+                a.fill(<span style="color: #008000; font-weight: bold">this</span>.bristleColors[i]); <span style="color: #408080; font-style: italic">// Fill with this particular bristle&#39;s color.</span>
+                <span style="color: #408080; font-style: italic">// Each bristle is an ellipses perpendicular to the forward vector.</span>
+                a.ellipse(<span style="color: #008000; font-weight: bold">this</span>.bristlePositions[i].x, <span style="color: #008000; font-weight: bold">this</span>.bristlePositions[i].y, <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i], <span style="color: #008000; font-weight: bold">this</span>.bristleSizes[i]);
+            }
+        }
+    }
+}
+
+<span style="color: #008000; font-weight: bold">var</span> p5_aq <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5(aquamarine, <span style="color: #BA2121">&quot;aquamarine&quot;</span>);
+</pre>
+            </div>
+
+        </div>
+        <p class="description">Another procedural "painting". This sketch started as an attempt to mimic the effects of Photoshop brushes. Basically, all of the strokes drawn on the canvas are created by individual "brushes", each of which has a number of "bristles", which are just circles that change in size over time. Each brush moves along a circular path, the "forward vector", and each bristle is perpendicular to this vector. By preserving every frame of each brush's position, strokes are created. Inadvertently inspired by <a href="http://www.jasper-johns.org/target-with-four-faces.jsp" target="_blank">Jasper Johns</a>
+        </p>
+    </div>
+    
+    <script>
+
+        $(".sourceCodeButton").click(function () {
+
+            if ($(this).siblings(".formattedCode").css("display") == "none") {
+                $(this).siblings(".formattedCode").slideDown();
+            } else {
+                $(this).siblings(".formattedCode").slideUp();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

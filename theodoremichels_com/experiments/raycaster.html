@@ -1,0 +1,343 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Raycaster</title>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+
+    <link href="http://fonts.googleapis.com/css?family=Titillium+Web:400,300,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+    
+    <script src="../js/lib/p5.min.js"></script>
+    <script src="../js/lib/jquery-1.11.3.min.js"></script>
+
+    <script src="../js/experiments/raycaster.js"></script>
+    
+    
+</head>
+
+<body>
+    <div id="p5Canvas"></div>
+
+    <div id="raycaster" class="p5Canvas"></div>
+    <div class="p5Box">
+
+        <h3 class="sourceCodeButton">source<br>{...}</h3>
+        <div class="formattedCode">
+                <!-- HTML generated using hilite.me -->
+                <div style="background: #f8f8f8; overflow:scroll;height:480px;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
+                    <pre style="margin: 0; line-height: 125%"><span style="color: #408080; font-style: italic">/*</span>
+<span style="color: #408080; font-style: italic">Raycaster</span>
+<span style="color: #408080; font-style: italic">Interactive, Procedurally Generated Banner Graphics</span>
+<span style="color: #408080; font-style: italic">Theodore Michels 2015</span>
+<span style="color: #408080; font-style: italic">Last updated: 07/12/2015</span>
+<span style="color: #408080; font-style: italic">*/</span>
+
+<span style="color: #408080; font-style: italic">// Put this in a function instance so that everything is out of the global namespace</span>
+<span style="color: #008000; font-weight: bold">var</span> raycaster <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> (r) {
+    <span style="color: #008000; font-weight: bold">var</span> numLines <span style="color: #666666">=</span> <span style="color: #666666">200</span>; <span style="color: #408080; font-style: italic">// How many lines at once?</span>
+    <span style="color: #008000; font-weight: bold">var</span> rays <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// Contains all of the &quot;LineRay&quot; objects.</span>
+
+    <span style="color: #008000; font-weight: bold">var</span> rotationAngle <span style="color: #666666">=</span> <span style="color: #666666">135.0</span>; <span style="color: #408080; font-style: italic">// Angle to rotate all of the lines.</span>
+
+    <span style="color: #408080; font-style: italic">/**** UI ****/</span>
+    <span style="color: #008000; font-weight: bold">var</span> showUI <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+    <span style="color: #008000; font-weight: bold">var</span> overToggle <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+    <span style="color: #008000; font-weight: bold">var</span> overSlider <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+    <span style="color: #008000; font-weight: bold">var</span> toggleSize <span style="color: #666666">=</span> <span style="color: #666666">20</span>;
+    <span style="color: #008000; font-weight: bold">var</span> sliders <span style="color: #666666">=</span> [];
+
+    <span style="color: #008000; font-weight: bold">var</span> canvas
+    r.setup <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        canvas <span style="color: #666666">=</span> r.createCanvas(r.windowWidth, <span style="color: #666666">200</span>);
+        canvas.mousePressed(uiCheck); <span style="color: #408080; font-style: italic">// Add mousePressed listener</span>
+        canvas.mouseReleased(releaseCheck);
+        r.background(<span style="color: #666666">0</span>);
+        r.smooth();
+
+        <span style="color: #408080; font-style: italic">/**** INITIALIZE SLIDERS ****/</span>
+        sliders[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Slider(r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.height <span style="color: #666666">-</span> toggleSize, r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, toggleSize, r.color(<span style="color: #666666">255</span>, <span style="color: #666666">80</span>)); <span style="color: #408080; font-style: italic">// Speed slider</span>
+
+        sliders[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Slider(toggleSize, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>, toggleSize, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.color(<span style="color: #666666">255</span>, <span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #666666">120</span>)); <span style="color: #408080; font-style: italic">// Red value slider</span>
+        sliders[<span style="color: #666666">1</span>].sliderValue <span style="color: #666666">=</span> <span style="color: #666666">0.2</span>; <span style="color: #408080; font-style: italic">// Arbitrary initial values</span>
+        sliders[<span style="color: #666666">2</span>] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Slider(toggleSize <span style="color: #666666">*</span> <span style="color: #666666">3</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>, toggleSize, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.color(<span style="color: #666666">0</span>, <span style="color: #666666">255</span>, <span style="color: #666666">0</span>, <span style="color: #666666">120</span>)); <span style="color: #408080; font-style: italic">// Green value slider</span>
+        sliders[<span style="color: #666666">2</span>].sliderValue <span style="color: #666666">=</span> <span style="color: #666666">0.5</span>;
+        sliders[<span style="color: #666666">3</span>] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Slider(toggleSize <span style="color: #666666">*</span> <span style="color: #666666">5</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>, toggleSize, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.color(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #666666">255</span>, <span style="color: #666666">120</span>)); <span style="color: #408080; font-style: italic">// Blue value slider</span>
+        sliders[<span style="color: #666666">3</span>].sliderValue <span style="color: #666666">=</span> <span style="color: #666666">0.5</span>;
+
+        <span style="color: #408080; font-style: italic">/**** INITIALIZE RAYS ****/</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numLines; i<span style="color: #666666">++</span>) {
+            rays[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> LineRay();
+            rays[i].init();
+        }
+    }
+
+    r.draw <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        r.background(<span style="color: #666666">0</span>);
+        <span style="color: #408080; font-style: italic">/******** RAYS ********/</span>
+        <span style="color: #408080; font-style: italic">// Translate rays to the center for easy rotation around a central point.</span>
+        r.push();
+        r.translate(r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>);
+        r.rotate(r.radians(rotationAngle));
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numLines; i<span style="color: #666666">++</span>) {
+            rays[i].update();
+        }
+        r.pop();
+
+        <span style="color: #408080; font-style: italic">/******** UI ********/</span>
+
+        <span style="color: #408080; font-style: italic">/**** Toggle ****/</span>
+        r.noFill();
+        r.stroke(<span style="color: #666666">255</span>);
+        r.rectMode(r.CENTER);
+        <span style="color: #408080; font-style: italic">// Check to see if the mouse is over the toggle</span>
+        <span style="color: #008000; font-weight: bold">if</span> (r.mouseX <span style="color: #666666">&gt;</span> toggleSize <span style="color: #666666">-</span> (toggleSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>) <span style="color: #666666">&amp;&amp;</span>
+            r.mouseX <span style="color: #666666">&lt;</span> toggleSize <span style="color: #666666">+</span> (toggleSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>) <span style="color: #666666">&amp;&amp;</span>
+            r.mouseY <span style="color: #666666">&lt;</span> r.height <span style="color: #666666">-</span> (toggleSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>) <span style="color: #666666">&amp;&amp;</span>
+            r.mouseY <span style="color: #666666">&gt;</span> r.height <span style="color: #666666">-</span> toggleSize <span style="color: #666666">-</span> (toggleSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>)) {
+            overToggle <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            overToggle <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        }
+        <span style="color: #008000; font-weight: bold">if</span> (overToggle) {
+            r.strokeWeight(<span style="color: #666666">2</span>);
+        } <span style="color: #408080; font-style: italic">// highlight on mouse over</span>
+        <span style="color: #008000; font-weight: bold">else</span> {
+            r.strokeWeight(<span style="color: #666666">1</span>);
+        }
+
+        <span style="color: #008000; font-weight: bold">if</span> (showUI) {
+            r.fill(<span style="color: #666666">255</span>, <span style="color: #666666">80</span>);
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            r.noFill();
+        }
+        r.rect(toggleSize, r.height <span style="color: #666666">-</span> toggleSize, toggleSize, toggleSize); <span style="color: #408080; font-style: italic">// Draw the toggle</span>
+
+        <span style="color: #008000; font-weight: bold">if</span> (showUI) {
+            <span style="color: #408080; font-style: italic">/**** Sliders ****/</span>
+            overSlider <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+            <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> sliders.length; i<span style="color: #666666">++</span>) {
+                sliders[i].update();
+                <span style="color: #008000; font-weight: bold">if</span> (sliders[i].mouseOver) {
+                    overSlider <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>; <span style="color: #408080; font-style: italic">// true if over ANY sliders</span>
+                }
+            }
+            <span style="color: #408080; font-style: italic">/**** Rotator ****/</span>
+            r.strokeWeight(<span style="color: #666666">2</span>);
+            r.stroke(<span style="color: #666666">255</span>);
+            r.noFill();
+            <span style="color: #008000; font-weight: bold">var</span> rotatorSize <span style="color: #666666">=</span> r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>;
+
+            <span style="color: #008000; font-weight: bold">if</span> (r.mouseIsPressed <span style="color: #666666">&amp;&amp;</span> <span style="color: #666666">!</span>overToggle <span style="color: #666666">&amp;</span> <span style="color: #666666">!</span>overSlider) { <span style="color: #408080; font-style: italic">// If not over the toggle or sliders, then activate the rotator!</span>
+                <span style="color: #008000; font-weight: bold">var</span> endVec <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(r.mouseX, r.mouseY);
+                <span style="color: #008000; font-weight: bold">var</span> centralVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>);
+                <span style="color: #008000; font-weight: bold">var</span> pointVector <span style="color: #666666">=</span> endVec.copy();
+                pointVector.sub(centralVector); <span style="color: #408080; font-style: italic">// Points from the center of the screen to the mouse.</span>
+                pointVector.normalize();
+                pointVector.mult(rotatorSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>); <span style="color: #408080; font-style: italic">// Normalize and scale so the line lands on the circle</span>
+
+                r.push();
+                <span style="color: #008000; font-weight: bold">var</span> angle <span style="color: #666666">=</span> r.degrees(p5.Vector.angleBetween(<span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">-1</span>, <span style="color: #666666">0</span>), pointVector)); <span style="color: #408080; font-style: italic">// Get angle between left vector and mouse</span>
+                <span style="color: #008000; font-weight: bold">var</span> angleAdjust;
+                <span style="color: #008000; font-weight: bold">var</span> finalAngle;
+                <span style="color: #008000; font-weight: bold">if</span> (r.mouseY <span style="color: #666666">&gt;</span> r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>) { <span style="color: #408080; font-style: italic">// .angleBetween only return acute angles, so convert them here when necessary</span>
+                    angleAdjust <span style="color: #666666">=</span> <span style="color: #666666">180</span> <span style="color: #666666">-</span> angle;
+                    angle <span style="color: #666666">=</span> <span style="color: #666666">180</span> <span style="color: #666666">+</span> angleAdjust;
+                }
+                rotationAngle <span style="color: #666666">=</span> angle; <span style="color: #408080; font-style: italic">// Rotate the lines accordingly</span>
+                r.translate(r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>); <span style="color: #408080; font-style: italic">// Move to the middle to draw the pointVector line</span>
+                r.line(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, pointVector.x, pointVector.y);
+                r.fill(<span style="color: #666666">255</span>, <span style="color: #666666">40</span>);
+                r.pop();
+            }
+
+            r.push(); <span style="color: #408080; font-style: italic">// Using push and pop here to simplify rotations</span>
+            r.translate(r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>); <span style="color: #408080; font-style: italic">// Jump to the center to draw</span>
+            r.arc(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, rotatorSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>, rotatorSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.PI, r.radians(rotationAngle) <span style="color: #666666">+</span> r.PI); <span style="color: #408080; font-style: italic">// Draw an arc between the left vector and the pointer vector</span>
+            r.noFill();
+            r.line(<span style="color: #666666">-</span>rotatorSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>, <span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #666666">0</span>); <span style="color: #408080; font-style: italic">// Draw the ellipses and line</span>
+            r.ellipse(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, rotatorSize, rotatorSize);
+            r.ellipse(<span style="color: #666666">-</span>rotatorSize <span style="color: #666666">/</span> <span style="color: #666666">2</span>, <span style="color: #666666">0</span>, <span style="color: #666666">20</span>, <span style="color: #666666">20</span>);
+            r.pop();
+        }
+
+        <span style="color: #408080; font-style: italic">/**** Text ****/</span>
+        r.noStroke();
+        r.textSize(<span style="color: #666666">60</span>);
+        r.textAlign(r.CENTER, r.CENTER);
+        <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span>showUI) {
+            r.fill(<span style="color: #666666">255</span>, <span style="color: #666666">180</span>);
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            r.fill(<span style="color: #666666">255</span>, <span style="color: #666666">20</span>); <span style="color: #408080; font-style: italic">// Fade out when showing UI</span>
+        }
+        r.text(<span style="color: #BA2121">&quot;YOUR TEXT HERE&quot;</span>, r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.height <span style="color: #666666">/</span> <span style="color: #666666">2</span>); <span style="color: #408080; font-style: italic">// Put whatever you want here!</span>
+    }
+
+    <span style="color: #408080; font-style: italic">/******** CLASSES ********/</span>
+    <span style="color: #008000; font-weight: bold">function</span> LineRay() {
+        <span style="color: #008000; font-weight: bold">this</span>.lineWidth;
+        <span style="color: #008000; font-weight: bold">this</span>.lineSpeed;
+        <span style="color: #008000; font-weight: bold">this</span>.currentLerpPoint;
+
+        <span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha; <span style="color: #408080; font-style: italic">// Used to fade out the line</span>
+        <span style="color: #008000; font-weight: bold">this</span>.lineColor;
+
+        <span style="color: #008000; font-weight: bold">this</span>.origin;
+        <span style="color: #008000; font-weight: bold">this</span>.destination;
+        <span style="color: #008000; font-weight: bold">this</span>.currentPosition;
+
+        <span style="color: #008000; font-weight: bold">this</span>.reset; <span style="color: #408080; font-style: italic">// Should the line be reset?</span>
+        <span style="color: #408080; font-style: italic">// Called to reset the line once it&#39;s offscreen.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.init <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+            <span style="color: #008000; font-weight: bold">this</span>.reset <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+
+            <span style="color: #008000; font-weight: bold">this</span>.lineWidth <span style="color: #666666">=</span> r.random(<span style="color: #666666">2</span>, <span style="color: #666666">20</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.lineSpeed <span style="color: #666666">=</span> r.random(<span style="color: #666666">0.01</span>, <span style="color: #666666">0.02</span>);
+
+            <span style="color: #008000; font-weight: bold">this</span>.currentLerpPoint <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+            <span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha <span style="color: #666666">=</span> <span style="color: #666666">80</span>;
+
+            <span style="color: #008000; font-weight: bold">this</span>.lineColor <span style="color: #666666">=</span> r.color( <span style="color: #408080; font-style: italic">// Set the color based on color slider values</span>
+                r.random(<span style="color: #666666">100</span>, <span style="color: #666666">255</span>) <span style="color: #666666">*</span> sliders[<span style="color: #666666">1</span>].sliderValue,
+                r.random(<span style="color: #666666">100</span>, <span style="color: #666666">255</span>) <span style="color: #666666">*</span> sliders[<span style="color: #666666">2</span>].sliderValue,
+                r.random(<span style="color: #666666">100</span>, <span style="color: #666666">255</span>) <span style="color: #666666">*</span> sliders[<span style="color: #666666">3</span>].sliderValue,
+                <span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha);
+
+            <span style="color: #008000; font-weight: bold">this</span>.origin <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">-</span>r.width, r.random(<span style="color: #666666">-</span>r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, r.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>)); <span style="color: #408080; font-style: italic">// Pick a random spot on the left</span>
+            <span style="color: #008000; font-weight: bold">this</span>.destination <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(r.width, <span style="color: #008000; font-weight: bold">this</span>.origin.y); <span style="color: #408080; font-style: italic">// The destination is the same y-position, but on the right side of the canvas</span>
+        }
+
+        <span style="color: #008000; font-weight: bold">this</span>.update <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.reset) {
+                <span style="color: #008000; font-weight: bold">this</span>.init();
+            }
+            <span style="color: #008000; font-weight: bold">this</span>.currentPosition <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.origin, <span style="color: #008000; font-weight: bold">this</span>.destination, <span style="color: #008000; font-weight: bold">this</span>.currentLerpPoint); <span style="color: #408080; font-style: italic">// lerp between the origin and the destination </span>
+            <span style="color: #008000; font-weight: bold">this</span>.currentLerpPoint <span style="color: #666666">+=</span> <span style="color: #008000; font-weight: bold">this</span>.lineSpeed <span style="color: #666666">*</span> sliders[<span style="color: #666666">0</span>].sliderValue; <span style="color: #408080; font-style: italic">// increment lerp speed and multiply by slider value</span>
+
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x <span style="color: #666666">&gt;</span> r.width) { <span style="color: #408080; font-style: italic">// If off screen, then start fading</span>
+                <span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha <span style="color: #666666">-=</span> <span style="color: #666666">2</span>;
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span>) { <span style="color: #408080; font-style: italic">// If completely faded, reset the line</span>
+                    <span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+                    <span style="color: #008000; font-weight: bold">this</span>.reset <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+                }
+            }
+            r.strokeWeight(<span style="color: #008000; font-weight: bold">this</span>.lineWidth);
+            <span style="color: #008000; font-weight: bold">this</span>.lineColor <span style="color: #666666">=</span> r.color(r.red(<span style="color: #008000; font-weight: bold">this</span>.lineColor), r.green(<span style="color: #008000; font-weight: bold">this</span>.lineColor), r.blue(<span style="color: #008000; font-weight: bold">this</span>.lineColor), <span style="color: #008000; font-weight: bold">this</span>.currentLineAlpha);
+            r.stroke(<span style="color: #008000; font-weight: bold">this</span>.lineColor);
+            r.strokeCap(r.SQUARE);
+
+            r.line(<span style="color: #008000; font-weight: bold">this</span>.origin.x, <span style="color: #008000; font-weight: bold">this</span>.origin.y, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.x, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y);
+        }
+    }
+
+    <span style="color: #008000; font-weight: bold">function</span> Slider(_x, _y, _width, _height, _fillColor) { <span style="color: #408080; font-style: italic">// Just a UI class - nothing too interesting here.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.x <span style="color: #666666">=</span> _x;
+        <span style="color: #008000; font-weight: bold">this</span>.y <span style="color: #666666">=</span> _y;
+        <span style="color: #008000; font-weight: bold">this</span>.sWidth <span style="color: #666666">=</span> _width;
+        <span style="color: #008000; font-weight: bold">this</span>.sHeight <span style="color: #666666">=</span> _height;
+        <span style="color: #008000; font-weight: bold">this</span>.fillColor <span style="color: #666666">=</span> _fillColor;
+
+        <span style="color: #008000; font-weight: bold">this</span>.mouseOver <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.grabbed <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">=</span> <span style="color: #666666">0.5</span>; <span style="color: #408080; font-style: italic">// Ranges from 0 to 1</span>
+
+        <span style="color: #008000; font-weight: bold">this</span>.LR <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>; <span style="color: #408080; font-style: italic">// Slider orientation</span>
+        <span style="color: #408080; font-style: italic">// If wider than it is tall, it&#39;s a left-right slider, otherwise it&#39;s up-down</span>
+        <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sWidth <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.sHeight) {
+            <span style="color: #008000; font-weight: bold">this</span>.LR <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            <span style="color: #008000; font-weight: bold">this</span>.LR <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        }
+
+        <span style="color: #008000; font-weight: bold">this</span>.update <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+            r.rectMode(r.CENTER);
+
+            <span style="color: #008000; font-weight: bold">if</span> ( <span style="color: #408080; font-style: italic">// Check for mouse over</span>
+                r.mouseX <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.x <span style="color: #666666">-</span> <span style="color: #008000; font-weight: bold">this</span>.sWidth <span style="color: #666666">/</span> <span style="color: #666666">2</span> <span style="color: #666666">&amp;&amp;</span>
+                r.mouseX <span style="color: #666666">&lt;</span> <span style="color: #008000; font-weight: bold">this</span>.x <span style="color: #666666">+</span> <span style="color: #008000; font-weight: bold">this</span>.sWidth <span style="color: #666666">/</span> <span style="color: #666666">2</span> <span style="color: #666666">&amp;&amp;</span>
+                r.mouseY <span style="color: #666666">&gt;</span> <span style="color: #008000; font-weight: bold">this</span>.y <span style="color: #666666">-</span> <span style="color: #008000; font-weight: bold">this</span>.sHeight <span style="color: #666666">/</span> <span style="color: #666666">2</span> <span style="color: #666666">&amp;&amp;</span>
+                r.mouseY <span style="color: #666666">&lt;</span> <span style="color: #008000; font-weight: bold">this</span>.y <span style="color: #666666">+</span> <span style="color: #008000; font-weight: bold">this</span>.sHeight <span style="color: #666666">/</span> <span style="color: #666666">2</span>) {
+                <span style="color: #008000; font-weight: bold">this</span>.mouseOver <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+            } <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.grabbed) {
+                <span style="color: #008000; font-weight: bold">this</span>.mouseOver <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+            }
+            <span style="color: #408080; font-style: italic">// Slider Fill</span>
+            r.fill(<span style="color: #008000; font-weight: bold">this</span>.fillColor);
+            r.noStroke();
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.LR) {
+                r.rect(<span style="color: #008000; font-weight: bold">this</span>.x, <span style="color: #008000; font-weight: bold">this</span>.y, <span style="color: #008000; font-weight: bold">this</span>.sWidth <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">this</span>.sliderValue, <span style="color: #008000; font-weight: bold">this</span>.sHeight); <span style="color: #408080; font-style: italic">// Fill left to right</span>
+            } <span style="color: #008000; font-weight: bold">else</span> {
+                r.rect(<span style="color: #008000; font-weight: bold">this</span>.x, <span style="color: #008000; font-weight: bold">this</span>.y, <span style="color: #008000; font-weight: bold">this</span>.sWidth, <span style="color: #008000; font-weight: bold">this</span>.sHeight <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">this</span>.sliderValue); <span style="color: #408080; font-style: italic">// Fill bottom to top</span>
+            }
+
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.mouseOver) { <span style="color: #408080; font-style: italic">// If the mouse is over, highlight</span>
+                r.strokeWeight(<span style="color: #666666">2</span>);
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.grabbed) {
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.LR) { <span style="color: #408080; font-style: italic">// Find distance from left or bottom as appropriate</span>
+                        <span style="color: #008000; font-weight: bold">this</span>.distance <span style="color: #666666">=</span> r.mouseX <span style="color: #666666">-</span> (<span style="color: #008000; font-weight: bold">this</span>.x <span style="color: #666666">-</span> <span style="color: #008000; font-weight: bold">this</span>.sWidth <span style="color: #666666">/</span> <span style="color: #666666">2</span>);
+                        <span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.distance <span style="color: #666666">/</span> <span style="color: #008000; font-weight: bold">this</span>.sWidth;
+
+                    } <span style="color: #008000; font-weight: bold">else</span> {
+                        <span style="color: #008000; font-weight: bold">this</span>.distance <span style="color: #666666">=</span> (<span style="color: #008000; font-weight: bold">this</span>.y <span style="color: #666666">+</span> <span style="color: #008000; font-weight: bold">this</span>.sHeight <span style="color: #666666">/</span> <span style="color: #666666">2</span>) <span style="color: #666666">-</span> r.mouseY;
+                        <span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.distance <span style="color: #666666">/</span> <span style="color: #008000; font-weight: bold">this</span>.sHeight;
+                    }
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span>) <span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">&gt;</span> <span style="color: #666666">1</span>) <span style="color: #008000; font-weight: bold">this</span>.sliderValue <span style="color: #666666">=</span> <span style="color: #666666">1.0</span>;
+                }
+            } <span style="color: #008000; font-weight: bold">else</span> {
+                r.strokeWeight(<span style="color: #666666">1</span>);
+            }
+            r.stroke(<span style="color: #666666">255</span>);
+            r.noFill();
+            r.rect(<span style="color: #008000; font-weight: bold">this</span>.x, <span style="color: #008000; font-weight: bold">this</span>.y, <span style="color: #008000; font-weight: bold">this</span>.sWidth, <span style="color: #008000; font-weight: bold">this</span>.sHeight); <span style="color: #408080; font-style: italic">// Slider Border    </span>
+        }
+    }
+
+    <span style="color: #008000; font-weight: bold">function</span> mousePressed() { <span style="color: #408080; font-style: italic">// Toggle the UI when the toggle is clicked.</span>
+    }
+
+    <span style="color: #008000; font-weight: bold">function</span> mouseReleased() {}
+
+    <span style="color: #008000; font-weight: bold">function</span> uiCheck() {
+        <span style="color: #008000; font-weight: bold">if</span> (overToggle) {
+            showUI <span style="color: #666666">=</span> <span style="color: #666666">!</span>showUI;
+        }
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> sliders.length; i<span style="color: #666666">++</span>) {
+            <span style="color: #008000; font-weight: bold">if</span> (sliders[i].mouseOver) {
+                sliders[i].grabbed <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>; <span style="color: #408080; font-style: italic">// Used to &quot;latch on&quot; to sliders so you can still affect them when not over them</span>
+            }
+        }
+    }
+
+    <span style="color: #008000; font-weight: bold">function</span> releaseCheck() { <span style="color: #408080; font-style: italic">// If the mouse is released, then none of the sliders are grabbed.</span>
+
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> sliders.length; i<span style="color: #666666">++</span>) {
+            sliders[i].grabbed <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        }
+    }
+}
+
+<span style="color: #008000; font-weight: bold">var</span> p5_r <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5(raycaster, <span style="color: #BA2121">&quot;raycaster&quot;</span>);
+</pre>
+                </div>
+            </div>
+        <p class="description">Nothing too complicated going on with this one (not any actual raycasting). An array of lines is drawn from one end of the canvas to the other. The UI is actually a lot more code than the visuals. That being said, don't forget to click the little box on the upper left of the window to show the UI. Controls include: rotation, speed, red, green, and blue</p>
+        
+    </div>
+    
+    <script>
+
+        $(".sourceCodeButton").click(function () {
+
+            if ($(this).siblings(".formattedCode").css("display") == "none") {
+                $(this).siblings(".formattedCode").slideDown();
+            } else {
+                $(this).siblings(".formattedCode").slideUp();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,305 @@
+body {
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #eee;
+    padding: 0px;
+    margin: 0px;
+}
+
+#bgCover {
+    background-color: white;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.70);
+    position: fixed;
+    width: 70%;
+    height: 100%;
+    left: 15%;
+    z-index: -1;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/******** HEADINGS ********/
+h1,
+h2 {
+    font-weight: 100;
+    font-family: 'Titillium Web', sans-serif;
+    letter-spacing: 8px;
+}
+
+h2::before {
+    content: '-';
+    color: rgba(255, 34, 61, 1.00);
+}
+
+h2::after {
+    content: '-';
+    color: rgba(255, 34, 61, 1.00);
+}
+h3{
+    font-weight: 100;
+    font-size: 16px;
+}
+
+header{
+    text-align: center;
+}
+
+.expLink{
+    text-align: center;
+    margin: 80px;
+}
+.expLink a{
+    color: black;
+}
+
+p {
+    width: 500px;
+    margin: 0 auto;
+    text-align: justify;
+    text-indent: 40px;
+    margin-top: 20px;
+}
+
+p.description{
+    font-size: 13px;
+    margin-top:20px;
+}
+
+
+#container {
+    padding-top: 50px;
+    padding-bottom: 50px;
+    margin: 0 auto;
+    width: 80%;
+    text-align: justify;
+}
+
+a {
+    text-decoration: none;
+    color: rgba(200, 34, 61, 1.00)
+}
+
+.headerPadding {
+    width: 100%;
+    height: 140px;
+}
+
+
+
+.navigationBox {
+    z-index: 5;
+    top: 0px;
+    position: fixed;
+    width: 100%;
+    left: 50%;
+    margin-left: -50%;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.70);
+    text-align: center;
+    background-color: white;
+}
+
+.footerBox {
+    bottom: 0px;
+    position: fixed;
+    width: 100%;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.70);
+    left: 50%;
+    margin-left: -50%;
+    text-align: center;
+    background: #fff;
+}
+
+footer {
+    font-size: 10px;
+}
+
+/******** NAVIGATION ********/
+.navigationBox h1 {
+    font-size: 45px;
+    color: #555;
+    background-color: white;
+    text-transform: lowercase;
+    word-spacing: 15px;
+    margin: 0 auto;
+    margin: 10px;
+    padding: 0;
+}
+
+nav ul {
+    /* Remove bullets/padding from the list. */
+    
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li {
+    /* Display on a single line and space items */
+    
+    display: inline-block;
+    line-height: 40px;
+    margin-right: -4px;
+    width: 140px;
+    text-transform: lowercase;
+    font-family: 'Titillium Web', sans-serif;
+    font-weight: 100;
+}
+
+nav a {
+    text-decoration: none;
+    background-color: white;
+    color: black;
+    display: block;
+    transition: .5s all;
+    border-left: 1px solid transparent;
+}
+
+nav a:hover {
+    color: white;
+    background-color: rgba(255, 34, 61, 1.00);
+    border-left: 1px solid white;
+}
+
+#glContainer {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    overflow: hidden;
+}
+
+/******** SKETCH DESCRIPTIONS ********/
+.p5Box {
+    position: fixed;
+    width: 500px;
+    bottom: 20px;
+    left: 20px;
+
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-left: solid 1px rgba(255, 34, 61, 1.00);
+    box-shadow: 5px 5px 0px rgba(255, 32, 61, 0.50);
+}
+
+.p5Box header {
+    line-height: 100%;
+    text-align: center;
+}
+
+
+.p5Box .formattedCode {
+    height: auto;
+    display: none;
+    overflow: hidden;
+}
+
+.p5Canvas {
+    width: 700px;
+    margin: auto;
+}
+#p5Canvas{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    margin: 0px;
+    z-index: -1;
+}
+
+.sourceCodeButton {
+    -webkit-margin-before:0px;
+    -webkit-margin-after:0px;
+    
+    margin-bottom: 20px;
+    
+    text-align: center;
+    cursor: pointer;
+    
+    letter-spacing: 6px;
+}
+
+input#un-mute {
+    display: none;
+}
+
+.unmute img {
+    display: none;
+}
+
+input#un-mute:checked ~ .unmute img {
+    display: initial;
+}
+
+input#un-mute:checked ~ .mute img {
+    display: none;
+}
+
+/******** CONNECT ********/
+
+#connectBox {
+    width: 60%;
+    margin: 0 auto;
+    text-align: left;
+    margin-top: 40px;
+    margin-bottom: 400px;
+}
+
+#connectBox ul {
+    text-align: center;
+    list-style: none;
+    padding: 17px;
+    margin: 0px;
+}
+
+#connectContainer {
+    border-left: 1px solid rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+#connectBox .iconList li {
+    display: inline-block;
+    margin: 2px;
+}
+
+#connectBox .iconList li img {
+    width: 50px;
+    height: 50px;
+}
+
+#connectBox a {
+    color: black;
+}
+
+#portrait {
+    float: left;
+    margin: 20px;
+    border: 1px solid white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
+}
+
+.localLink {
+    cursor: pointer;
+}
+
+#soundToggle {
+    position: absolute;
+    left: 30px;
+    top: 20px;
+}
+
+.accentDiv {
+    border-bottom: dashed 1px rgba(255, 34, 61, 1.00);
+    ;
+    width: 100px;
+    margin: auto;
+    margin-top: 0px;
+    margin-bottom: 40px;
+}
+
+#rayCastBG {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+}

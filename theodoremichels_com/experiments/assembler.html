@@ -1,0 +1,308 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Assembler</title>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+
+    <link href="http://fonts.googleapis.com/css?family=Titillium+Web:400,300,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+    
+    <script src="../js/lib/p5.min.js"></script>
+    <script src="../js/lib/jquery-1.11.3.min.js"></script>
+
+    <script src="../js/experiments/assembler.js"></script>
+    
+    
+</head>
+
+<body>
+    <div id="p5Canvas"></div>
+
+    <div id="assembler" class="p5Canvas"></div>
+    <div class="p5Box">
+
+        <h3 class="sourceCodeButton">source<br>{...}</h3>
+        <div class="formattedCode">
+                <!-- HTML generated using hilite.me -->
+                <div style="background: #f8f8f8; overflow:auto;width:auto;height:480px;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
+                    <pre style="margin: 0; line-height: 125%"><span style="color: #408080; font-style: italic">/*</span>
+<span style="color: #408080; font-style: italic">Assembler</span>
+<span style="color: #408080; font-style: italic"> Procedurally Generated Banner Graphics</span>
+<span style="color: #408080; font-style: italic"> Theodore Michels 2015</span>
+<span style="color: #408080; font-style: italic"> Last updated: 07/22/2015</span>
+<span style="color: #408080; font-style: italic"> */</span>
+
+<span style="color: #408080; font-style: italic">// Put this in a function instance so that everything is out of the global namespace</span>
+<span style="color: #008000; font-weight: bold">var</span> assembler <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> (a) {
+    <span style="color: #008000; font-weight: bold">var</span> numPoints <span style="color: #666666">=</span> <span style="color: #666666">50</span>; <span style="color: #408080; font-style: italic">// The starting number of points.</span>
+
+    <span style="color: #008000; font-weight: bold">var</span> smartPoints <span style="color: #666666">=</span> []; <span style="color: #408080; font-style: italic">// Contains each of the points which will look for other points to connect to.</span>
+
+    <span style="color: #008000; font-weight: bold">var</span> moving <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>; <span style="color: #408080; font-style: italic">// Is the composition currently moving?</span>
+    <span style="color: #008000; font-weight: bold">var</span> moveDuration <span style="color: #666666">=</span> <span style="color: #666666">300</span>; <span style="color: #408080; font-style: italic">// For how long should the composition move (frames)?</span>
+    <span style="color: #008000; font-weight: bold">var</span> timeMoving <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+    <span style="color: #008000; font-weight: bold">var</span> stillDuration <span style="color: #666666">=</span> <span style="color: #666666">0</span>; <span style="color: #408080; font-style: italic">// For how long should the composition remain still?</span>
+    <span style="color: #008000; font-weight: bold">var</span> timeStill <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+
+    <span style="color: #408080; font-style: italic">/**** Colors ****/</span>
+    <span style="color: #408080; font-style: italic">// Keep track of previous colors to interpolate between them.</span>
+    <span style="color: #008000; font-weight: bold">var</span> bgColor;
+    <span style="color: #008000; font-weight: bold">var</span> bgColorLast;
+    <span style="color: #008000; font-weight: bold">var</span> currentBgColor <span style="color: #666666">=</span> a.color(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #666666">0</span>);
+
+    <span style="color: #008000; font-weight: bold">var</span> triColor;
+    <span style="color: #008000; font-weight: bold">var</span> triColorLast;
+    <span style="color: #008000; font-weight: bold">var</span> currentTriColor <span style="color: #666666">=</span> a.color(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #666666">0</span>);
+
+    a.setup <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        canvas <span style="color: #666666">=</span> a.createCanvas(a.windowWidth, <span style="color: #666666">480</span>);
+        a.smooth();
+        a.background(<span style="color: #666666">0</span>);
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numPoints; i<span style="color: #666666">++</span>) {
+            smartPoints[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> SmartPoint(); <span style="color: #408080; font-style: italic">// Create the initial number of &quot;Smart Points&quot; (class listed below...)</span>
+        }
+        <span style="color: #408080; font-style: italic">// Random starting colors.</span>
+        bgColorLast <span style="color: #666666">=</span> a.color(a.random(<span style="color: #666666">180</span>), a.random(<span style="color: #666666">180</span>), a.random(<span style="color: #666666">180</span>));
+        bgColor <span style="color: #666666">=</span> a.color(a.random(<span style="color: #666666">180</span>), a.random(<span style="color: #666666">180</span>), a.random(<span style="color: #666666">180</span>));
+        triColorLast <span style="color: #666666">=</span> a.color(a.random(<span style="color: #666666">255</span>), a.random(<span style="color: #666666">255</span>), a.random(<span style="color: #666666">255</span>), <span style="color: #666666">80</span>);
+        triColor <span style="color: #666666">=</span> a.color(a.random(<span style="color: #666666">255</span>), a.random(<span style="color: #666666">255</span>), a.random(<span style="color: #666666">255</span>), <span style="color: #666666">80</span>);
+    }
+
+    a.draw <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        a.background(currentBgColor); <span style="color: #408080; font-style: italic">// Fill with the currently lerped bgColor  </span>
+        <span style="color: #408080; font-style: italic">// Move once the time is up.</span>
+        <span style="color: #008000; font-weight: bold">if</span> (timeStill <span style="color: #666666">&gt;</span> stillDuration) {
+            moving <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            moving <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        }
+
+        <span style="color: #008000; font-weight: bold">if</span> (moving) {
+            timeMoving<span style="color: #666666">++</span>;
+            <span style="color: #408080; font-style: italic">// While moving, interpolate the colors of the background and triangles between random values</span>
+            currentBgColor <span style="color: #666666">=</span> a.lerpColor(bgColorLast, bgColor, timeMoving <span style="color: #666666">/</span> moveDuration);
+            currentTriColor <span style="color: #666666">=</span> a.lerpColor(triColorLast, triColor, timeMoving <span style="color: #666666">/</span> moveDuration);
+            <span style="color: #408080; font-style: italic">// Once the movement time is up, generate some new random values and reset counters.</span>
+            <span style="color: #008000; font-weight: bold">if</span> (timeMoving <span style="color: #666666">&gt;</span> moveDuration) {
+                stillDuration <span style="color: #666666">=</span> a.random(<span style="color: #666666">200</span>, <span style="color: #666666">600</span>);
+                moveDuration <span style="color: #666666">=</span> a.random(<span style="color: #666666">100</span>, <span style="color: #666666">400</span>);
+                timeStill <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+                timeMoving <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+
+                bgColorLast <span style="color: #666666">=</span> bgColor; <span style="color: #408080; font-style: italic">// This color is now the last one; then generate a new one.</span>
+                bgColor <span style="color: #666666">=</span> a.color(a.random(<span style="color: #666666">180</span>), a.random(<span style="color: #666666">180</span>), a.random(<span style="color: #666666">180</span>));
+
+                triColorLast <span style="color: #666666">=</span> triColor;
+                triColor <span style="color: #666666">=</span> a.color(a.random(<span style="color: #666666">255</span>), a.random(<span style="color: #666666">255</span>), a.random(<span style="color: #666666">255</span>), <span style="color: #666666">80</span>);
+            }
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            timeStill<span style="color: #666666">++</span>;
+        }
+
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> smartPoints.length; i<span style="color: #666666">++</span>) {
+            smartPoints[i].update(); <span style="color: #408080; font-style: italic">// Update all points    </span>
+
+            <span style="color: #008000; font-weight: bold">if</span> (smartPoints[i].done) {
+                <span style="color: #408080; font-style: italic">// After removing inactive points, add new ones.</span>
+                smartPoints[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> SmartPoint();
+            }
+        }
+    }
+
+    <span style="color: #408080; font-style: italic">/******** CLASSES ********/</span>
+    <span style="color: #008000; font-weight: bold">function</span> SmartPoint() {
+        <span style="color: #408080; font-style: italic">// This &quot;SmartPoint&quot; looks for its 2 nearest neighbors and draws a triangle using itself and the other 2 points.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.offscreen <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>; <span style="color: #408080; font-style: italic">// If this point is &quot;out of bounds&quot;, it should stop looking for connections.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.done <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+
+        <span style="color: #008000; font-weight: bold">this</span>.size <span style="color: #666666">=</span> a.random(<span style="color: #666666">10</span>, <span style="color: #666666">60</span>);
+        <span style="color: #008000; font-weight: bold">this</span>.alphaValue <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+
+        <span style="color: #008000; font-weight: bold">this</span>.currentPosition <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(a.random(a.width), a.random(a.height)); <span style="color: #408080; font-style: italic">// Position of this point.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(); <span style="color: #408080; font-style: italic">// Where are the points of the triangle currently?</span>
+        <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector();
+        <span style="color: #008000; font-weight: bold">this</span>.movement <span style="color: #666666">=</span> p5.Vector.random2D(); <span style="color: #408080; font-style: italic">// Generate a random movement direction for this point.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.movement.mult(a.random(<span style="color: #666666">0.2</span>, <span style="color: #666666">1.0</span>));
+        <span style="color: #408080; font-style: italic">// Are the other ends of the triangle moving? If so, how far have they gotten?</span>
+        <span style="color: #008000; font-weight: bold">this</span>.moving1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.moveCounter1 <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.moving2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.moveCounter2 <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+
+        <span style="color: #408080; font-style: italic">// The other &quot;Smart Points&quot; that this point is linked to.</span>
+        <span style="color: #408080; font-style: italic">// Also keep track of the &quot;OLD&quot; points for interpolation.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.sibling_1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.sibling_1_OLD <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.sibling_2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>;
+        <span style="color: #008000; font-weight: bold">this</span>.sibling_2_OLD <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>;
+
+        <span style="color: #008000; font-weight: bold">this</span>.update <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () { <span style="color: #408080; font-style: italic">// The class&#39; central function</span>
+
+            <span style="color: #408080; font-style: italic">// Check to see if the point is offscreen (with some padding)</span>
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x <span style="color: #666666">&gt;</span> a.width <span style="color: #666666">+</span> a.width <span style="color: #666666">/</span> <span style="color: #666666">4</span> <span style="color: #666666">||</span>
+                <span style="color: #008000; font-weight: bold">this</span>.currentPosition.x <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">-</span> a.width <span style="color: #666666">/</span> <span style="color: #666666">4</span> <span style="color: #666666">||</span>
+                <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y <span style="color: #666666">&gt;</span> a.height <span style="color: #666666">+</span> a.height <span style="color: #666666">/</span> <span style="color: #666666">4</span> <span style="color: #666666">||</span>
+                <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">-</span> a.height <span style="color: #666666">/</span> <span style="color: #666666">4</span>) {
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.offscreen) { <span style="color: #408080; font-style: italic">// This should only happen once.</span>
+                    <span style="color: #008000; font-weight: bold">this</span>.offscreen <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+                }
+            }
+
+            <span style="color: #008000; font-weight: bold">if</span> (moving) {
+                <span style="color: #008000; font-weight: bold">this</span>.currentPosition.add(<span style="color: #008000; font-weight: bold">this</span>.movement); <span style="color: #408080; font-style: italic">// Add the random movement vector if applicable</span>
+            }
+            <span style="color: #408080; font-style: italic">/******** FIND 2 NEAREST POINTS ********/</span>
+            <span style="color: #408080; font-style: italic">// If this point is not offscreen, and if neither of its points are moving, then continue looking for the closest points.</span>
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.offscreen <span style="color: #666666">&amp;&amp;</span> <span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.moving1 <span style="color: #666666">&amp;&amp;</span> <span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.moving2) {
+                <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> smartPoints.length; i<span style="color: #666666">++</span>) { <span style="color: #408080; font-style: italic">// Look through every other point.</span>
+                    <span style="color: #008000; font-weight: bold">this</span>.curPoint <span style="color: #666666">=</span> smartPoints[i]; <span style="color: #408080; font-style: italic">// Placeholder for simplification</span>
+                    <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.curPoint <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span> <span style="color: #666666">&amp;&amp;</span> <span style="color: #408080; font-style: italic">// Don&#39;t look at self.</span>
+                        <span style="color: #008000; font-weight: bold">this</span>.curPoint <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_2 <span style="color: #666666">&amp;&amp;</span> <span style="color: #408080; font-style: italic">// Don&#39;t look if already connected via &quot;sibling_2&quot;</span>
+                        <span style="color: #008000; font-weight: bold">this</span>.curPoint.sibling_1 <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span> <span style="color: #666666">&amp;&amp;</span> <span style="color: #408080; font-style: italic">// Ignore if other points are already connected to this one.</span>
+                        <span style="color: #008000; font-weight: bold">this</span>.curPoint.sibling_2 <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span>) {
+                        <span style="color: #408080; font-style: italic">// Finally, if the currently examined point is closer that the current &quot;sibling&quot;, then this point will be its new sibling.</span>
+                        <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sibling_1 <span style="color: #666666">==</span> <span style="color: #008000; font-weight: bold">this</span> <span style="color: #666666">||</span>
+                            <span style="color: #008000; font-weight: bold">this</span>.sibling_1.offscreen <span style="color: #666666">||</span>
+                            p5.Vector.dist(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.curPoint.currentPosition) <span style="color: #666666">&lt;</span> p5.Vector.dist(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.sibling_1.currentPosition)
+                        ) {
+                            <span style="color: #008000; font-weight: bold">this</span>.sibling_1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.curPoint;
+                        }
+                        <span style="color: #408080; font-style: italic">// Now, do the same thing again to get the second point.</span>
+                        <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.curPoint <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_1) { <span style="color: #408080; font-style: italic">// Ignore sibling_1</span>
+                            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sibling_2 <span style="color: #666666">==</span> <span style="color: #008000; font-weight: bold">this</span> <span style="color: #666666">||</span>
+                                p5.Vector.dist(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.curPoint.currentPosition) <span style="color: #666666">&lt;</span> p5.Vector.dist(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.sibling_2.currentPosition) <span style="color: #666666">||</span>
+                                <span style="color: #008000; font-weight: bold">this</span>.sibling_2.offscreen
+                            ) {
+                                <span style="color: #008000; font-weight: bold">this</span>.sibling_2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.curPoint;
+                            }
+                        }
+                    }
+                }
+            }
+
+            <span style="color: #408080; font-style: italic">/******** MOVE TO NEAREST POINTS ********/</span>
+            <span style="color: #408080; font-style: italic">/**** First Point ****/</span>
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sibling_1 <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_1_OLD <span style="color: #666666">||</span> <span style="color: #008000; font-weight: bold">this</span>.offscreen) { <span style="color: #408080; font-style: italic">// If the nearest sibling has changed...then move to it.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.moving1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+            }
+
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.moving1) { <span style="color: #408080; font-style: italic">// If moving...interpolate between points based on a number of factors.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.moveCounter1 <span style="color: #666666">+=</span> <span style="color: #666666">0.05</span>; <span style="color: #408080; font-style: italic">// Increment the counter for interpolation.</span>
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.offscreen) { <span style="color: #408080; font-style: italic">// If not offscreen, lerp between the old position and the new.</span>
+                    <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.sibling_1_OLD.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.sibling_1.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.moveCounter1);
+                } <span style="color: #008000; font-weight: bold">else</span> { <span style="color: #408080; font-style: italic">// Otherwise, &quot;retract&quot; by lerping between the nearest point and the current position.</span>
+                    <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.sibling_1.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.moveCounter1);
+                }
+            } <span style="color: #008000; font-weight: bold">else</span> { <span style="color: #408080; font-style: italic">// If finished moving, the end point is just the sibling&#39;s position.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_1.currentPosition;
+            }
+
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.moveCounter1 <span style="color: #666666">&gt;=</span> <span style="color: #666666">1.0</span>) { <span style="color: #408080; font-style: italic">// If the counter is greater than 1 (at the destination), then stop moving.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.moving1 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>; <span style="color: #408080; font-style: italic">// Stop moving and reset the counter.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.moveCounter1 <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.offscreen) {
+                    <span style="color: #008000; font-weight: bold">this</span>.sibling_1_OLD <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_1; <span style="color: #408080; font-style: italic">// The old and current siblings are now the same.</span>
+                } <span style="color: #008000; font-weight: bold">else</span> {
+                    <span style="color: #008000; font-weight: bold">this</span>.done <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>; <span style="color: #408080; font-style: italic">// If offscreen, this point is ready for removal.</span>
+                }
+            }
+            <span style="color: #408080; font-style: italic">/**** Second Point ****/</span>
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.sibling_2 <span style="color: #666666">!=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_2_OLD <span style="color: #666666">||</span> <span style="color: #008000; font-weight: bold">this</span>.offscreen) { <span style="color: #408080; font-style: italic">// Now do the same thing for the second point.</span>
+                <span style="color: #008000; font-weight: bold">this</span>.moving2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+            }
+
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.moving2) {
+                <span style="color: #008000; font-weight: bold">this</span>.moveCounter2 <span style="color: #666666">+=</span> <span style="color: #666666">0.05</span>;
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.offscreen) {
+                    <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.sibling_2_OLD.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.sibling_2.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.moveCounter2);
+                } <span style="color: #008000; font-weight: bold">else</span> {
+                    <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.sibling_2.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.moveCounter2);
+                }
+            } <span style="color: #008000; font-weight: bold">else</span> {
+                <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_2.currentPosition;
+            }
+
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.moveCounter2 <span style="color: #666666">&gt;=</span> <span style="color: #666666">1.0</span>) {
+                <span style="color: #008000; font-weight: bold">this</span>.moving2 <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+                <span style="color: #008000; font-weight: bold">this</span>.moveCounter2 <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span><span style="color: #008000; font-weight: bold">this</span>.offscreen) {
+                    <span style="color: #008000; font-weight: bold">this</span>.sibling_2_OLD <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.sibling_2;
+                } <span style="color: #008000; font-weight: bold">else</span> {
+                    <span style="color: #008000; font-weight: bold">this</span>.done <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+                }
+            }
+
+            <span style="color: #408080; font-style: italic">/******** DISPLAY ********/</span>
+            a.noStroke(); <span style="color: #408080; font-style: italic">// No stroke, we&#39;ll draw an &quot;incomplete&quot; border below with line()</span>
+            a.strokeWeight(<span style="color: #666666">1</span>);
+            a.fill(currentTriColor);
+            <span style="color: #408080; font-style: italic">// Draw a triangle between this point and its two siblings.</span>
+            a.triangle(<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1.x, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1.y, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2.x, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2.y);
+
+            <span style="color: #408080; font-style: italic">// Fade in the ellipses</span>
+            <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.alphaValue <span style="color: #666666">&lt;</span> <span style="color: #666666">80</span>) {
+                <span style="color: #008000; font-weight: bold">this</span>.alphaValue <span style="color: #666666">+=</span> <span style="color: #666666">1</span>;
+                <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #008000; font-weight: bold">this</span>.alphaValue <span style="color: #666666">&gt;=</span> <span style="color: #666666">80</span>) {
+                    <span style="color: #008000; font-weight: bold">this</span>.alphaValue <span style="color: #666666">=</span> <span style="color: #666666">80.0</span>;
+                }
+            }
+
+            a.stroke(<span style="color: #666666">255</span>, <span style="color: #008000; font-weight: bold">this</span>.alphaValue <span style="color: #666666">*</span> <span style="color: #666666">2.0</span>);
+            a.strokeWeight(<span style="color: #666666">2</span>);
+            a.noFill();
+            a.ellipse(<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y, <span style="color: #008000; font-weight: bold">this</span>.size <span style="color: #666666">*</span> <span style="color: #666666">1.2</span>, <span style="color: #008000; font-weight: bold">this</span>.size <span style="color: #666666">*</span> <span style="color: #666666">1.2</span>); <span style="color: #408080; font-style: italic">// The larger, outer ring.</span>
+
+            <span style="color: #008000; font-weight: bold">this</span>.ellipseColor <span style="color: #666666">=</span> a.lerpColor(currentTriColor, currentBgColor);
+            <span style="color: #008000; font-weight: bold">this</span>.ellipseColor <span style="color: #666666">=</span> a.color(<span style="color: #008000; font-weight: bold">this</span>.ellipseColor.getRed, <span style="color: #008000; font-weight: bold">this</span>.ellipseColor.getGreen, <span style="color: #008000; font-weight: bold">this</span>.ellipseColor.getBlue, <span style="color: #008000; font-weight: bold">this</span>.alphaValue);
+            a.fill(<span style="color: #008000; font-weight: bold">this</span>.ellipseColor); <span style="color: #408080; font-style: italic">// A color between the background and triangles.</span>
+            a.stroke(<span style="color: #666666">255</span>, <span style="color: #008000; font-weight: bold">this</span>.alphaValue);
+            a.strokeWeight(<span style="color: #666666">1</span>);
+            a.ellipse(<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y, <span style="color: #008000; font-weight: bold">this</span>.size, <span style="color: #008000; font-weight: bold">this</span>.size); <span style="color: #408080; font-style: italic">// The smaller, inner ring.</span>
+
+            <span style="color: #408080; font-style: italic">// Find a bunch of points between all of the triangle&#39;s corners.</span>
+            <span style="color: #008000; font-weight: bold">this</span>.start1 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1, <span style="color: #666666">0.4</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.end1 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1, <span style="color: #666666">0.6</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.start2 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2, <span style="color: #666666">0.4</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.end2 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.currentPosition, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2, <span style="color: #666666">0.6</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.start3 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2, <span style="color: #666666">0.4</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.end3 <span style="color: #666666">=</span> p5.Vector.lerp(<span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2, <span style="color: #666666">0.6</span>);
+            a.strokeWeight(<span style="color: #666666">1</span>);
+            a.strokeCap(a.SQUARE);
+            a.stroke(<span style="color: #666666">255</span>, <span style="color: #666666">80</span>);
+            <span style="color: #408080; font-style: italic">// Draw the border lines</span>
+            a.line(<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y, <span style="color: #008000; font-weight: bold">this</span>.start1.x, <span style="color: #008000; font-weight: bold">this</span>.start1.y);
+            a.line(<span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1.x, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1.y, <span style="color: #008000; font-weight: bold">this</span>.end1.x, <span style="color: #008000; font-weight: bold">this</span>.end1.y);
+            a.line(<span style="color: #008000; font-weight: bold">this</span>.currentPosition.x, <span style="color: #008000; font-weight: bold">this</span>.currentPosition.y, <span style="color: #008000; font-weight: bold">this</span>.start2.x, <span style="color: #008000; font-weight: bold">this</span>.start2.y);
+            a.line(<span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2.x, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2.y, <span style="color: #008000; font-weight: bold">this</span>.end2.x, <span style="color: #008000; font-weight: bold">this</span>.end2.y);
+            a.line(<span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1.x, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint1.y, <span style="color: #008000; font-weight: bold">this</span>.start3.x, <span style="color: #008000; font-weight: bold">this</span>.start3.y);
+            a.line(<span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2.x, <span style="color: #008000; font-weight: bold">this</span>.currentEndPoint2.y, <span style="color: #008000; font-weight: bold">this</span>.end3.x, <span style="color: #008000; font-weight: bold">this</span>.end3.y);
+        }
+    }
+}
+
+<span style="color: #008000; font-weight: bold">var</span> p5_a <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5(assembler, <span style="color: #BA2121">&quot;assembler&quot;</span>);
+</pre>
+                </div>
+            </div>
+        <p class="description">This project was meant to be a sort of generative, digital "painting" - partly inspired by <a href="http://reas.com/">Casey Reas'</a> amazing work. The composition changes randomly over time - sometimes the results are quite nice, and other times they're quite ugly. It's also a kind of simple experiment in emergent behavior. Basically, each circle autonomously looks for its nearest two neighbors and then creates a triangle with the resulting points. By putting a bunch of these simple behaviors together, you can get some pretty complex results. I disobeyed many of the DRY commandments in this one, so the source code gets a bit redundant in places.
+        </p>
+        
+    </div>
+    
+    <script>
+
+        $(".sourceCodeButton").click(function () {
+
+            if ($(this).siblings(".formattedCode").css("display") == "none") {
+                $(this).siblings(".formattedCode").slideDown();
+            } else {
+                $(this).siblings(".formattedCode").slideUp();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

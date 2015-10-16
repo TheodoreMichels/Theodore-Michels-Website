@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <link href="http://fonts.googleapis.com/css?family=Titillium+Web:400,300,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8">
+    <title>Theodore Michels</title>
+    <script src="js/lib/three.min.js"></script>
+    <script src="js/lib/jquery-1.11.3.min.js"></script>
+    <script src="js/lib/p5.min.js"></script>
+    <script src="js/lib/p5.dom.js"></script>
+    <script src="js/lib/jquery.visible.min.js"></script>
+
+    <script src="js/experiments/raycasterBG.js"></script>
+
+
+</head>
+
+<body>
+
+    <div class="navigationBox">
+        <div id="soundToggle">
+            <input type="checkbox" name="un-mute" id="un-mute" checked>
+            <label for="un-mute" class="unmute"> <img width="30px" height="30px" src="http://upload.wikimedia.org/wikipedia/commons/3/3f/Mute_Icon.svg" alt="Mute_Icon.svg" title="Mute icon"> </label>
+            <label for="un-mute" class="mute"> <img width="30px" height="30px" src="http://upload.wikimedia.org/wikipedia/commons/2/21/Speaker_Icon.svg" alt="Speaker_Icon.svg" title="Unmute/speaker icon"> </label>
+        </div>
+        <h1>Theodore M<span style = "color:rgba(255, 34, 61, 1.00);">i</span>chels</h1>
+
+        <nav>
+            <ul>
+                <li class="navItem" onclick="customScrollTo('#home')"><a>Home</a>
+                </li>
+                <li class="navItem" onclick="customScrollTo('#experiments')"><a>Experiments</a>
+                </li>
+                <li class="navItem" onclick="customScrollTo('#connect')"><a>Connect</a>
+                </li>
+            </ul>
+        </nav>
+
+        <script>
+            var randomID;
+
+            $("a").hover(
+                function () {
+                    highlightRandomShape();
+                },
+                function () {
+                    releaseShape();
+                });
+
+            function highlightRandomShape() {
+                randomID = Math.floor((Math.random() * numShapes));
+                shapesArray[randomID].mesh.material = highlightMat;
+                shapesArray[randomID].moving = false;
+            }
+
+            function releaseShape() {
+                shapesArray[randomID].mesh.material = material;
+                shapesArray[randomID].moving = true;
+            }
+        </script>
+    </div>
+
+    <div id="bgCover"></div>
+
+    <div class="headerPadding" id="home"></div>
+    <div id="glContainer">
+        <script src="js/experiments/sinLove.js"></script>
+    </div>
+    <div id="container">
+
+        <script>
+            var speakerToggle = document.getElementById("un-mute");
+            speakerToggle.onclick = function () {
+                muted = !muted;
+                if (muted) {
+                    masterGain.gain.value = 0.0;
+                } else {
+                    masterGain.gain.value = 1.0;
+                }
+            }
+        </script>
+        <div id="main">
+            <div class="accentDiv"></div>
+            <p>I like to make things. When those things fit inside an internet tube, I might put them in the "Experiments" section so other people can see how they work.</p>
+            <p>Consider this the hub of all the other bits of me strung about the internet. To get to some of those other bits, check out the <a class="localLink" onclick="customScrollTo('#connect')">Connect</a> section below. Then you can see if you and I share space on some other company's hard drive.
+            </p>
+            <div class="headerPadding" id="experiments"></div>
+            <header>
+                <h1>Experiments</h1>
+                <div class="accentDiv"></div>
+            </header>
+            <p> A collection of some experiments in interactive / generative code for web experiences. Feel free to use / alter for whatever purpose, but this code is provided "AS IS", without warranty of any kind, and may malfunction or explode without warning. Also, the source code may not be <em>exactly</em> the same as what's shown in the source boxes...</p>
+        </div>
+
+        <a href="experiments/aquamarine.html" target="_blank">
+            <div class="expLink">
+                <h2>Aquamarine</h2>
+                <h3>Procedurally Generated Banner Graphics with <a href="http://p5js.org/" target="_blank">p5.js</a></h3>
+            </div>
+        </a>
+
+        <a href="experiments/assembler.html" target="_blank">
+            <div class="expLink">
+                <h2>Assembler</h2>
+                <h3>Procedurally Generated Banner Graphics with <a href="http://p5js.org/" target="_blank">p5.js</a></h3>
+            </div>
+        </a>
+
+        <a href="experiments/raycaster.html" target="_blank">
+            <div class="expLink">
+                <h2>Raycaster</h2>
+                <h3>Interactive, Procedurally Generated Banner Graphics with <a href="http://p5js.org/" target="_blank">p5.js</a></h3>
+            </div>
+        </a>
+
+
+        <a href="experiments/zerthis.html" target="_blank">
+            <div class="expLink">
+                <h2>Zerthis</h2>
+                <h3>Procedural Animation &amp; Simple AI with <a href="http://p5js.org/" target="_blank">p5.js</a></h3>
+            </div>
+        </a>
+
+
+
+        <div class="headerPadding" id="connect"></div>
+        <header>
+            <h1>Connect</h1>
+            <div class="accentDiv"></div>
+        </header>
+        <div id="connectBox">
+            <contact>
+                <img id="portrait" src="images/TheodoreMichels.jpg" alt="Theodore Michels" width="180px" height="180px">
+                <div id="connectContainer">
+                    <ul>
+                        <li><a href="mailto:theodoremichels@gmail.com">theodoremichels@gmail.com</a>
+                        </li>
+                        <li><a href="tel:19123992792">1.912.399.2792</a>
+                        </li>
+                    </ul>
+                    <ul class="iconList">
+                        <li>
+                            <a href="https://www.behance.net/theodoremichels" target="_blank"><img src="images/behanceicon.svg" alt="Theodore Michels on Behance">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/pub/theodore-michels/a3/139/6b3" target="_blank"><img src="images/linkedinicon.svg" alt="Theodore Michels on LinkedIn">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://vimeo.com/theodoremichels" target="_blank"><img src="images/vimeoicon.svg" alt="Theodore Michels on Vimeo">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://twitter.com/TheodoreQM" target="_blank"><img src="images/twittericon.svg" alt="Theodore Michels on Twitter">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/TheodoreMichels" target="_blank"><img src="images/githubicon.svg" alt="Theodore Michels on GitHub">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </contact>
+        </div>
+    </div>
+
+
+
+    <script>
+        $(".sourceCodeButton").click(function () {
+
+            if ($(this).siblings(".formattedCode").css("display") == "none") {
+                $(this).siblings(".formattedCode").slideDown();
+            } else {
+                $(this).siblings(".formattedCode").slideUp();
+            }
+        });
+
+        function customScrollTo(id) {
+            $('html, body').animate({
+                scrollTop: $(id).offset().top
+            }, 800, function () {
+                window.location = id;
+            });
+
+        }
+    </script>
+    <div class="footerBox">
+        <footer>Copyleft Theodore Michels 2015. All rights revoked.
+            <br>
+        </footer>
+    </div>
+    <div id="rayCastBG">
+    </div>
+</body>
+
+</html>

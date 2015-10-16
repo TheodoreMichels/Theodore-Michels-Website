@@ -1,0 +1,376 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Zerthis</title>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+
+    <link href="http://fonts.googleapis.com/css?family=Titillium+Web:400,300,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+    
+    <script src="../js/lib/p5.min.js"></script>
+    <script src="../js/lib/jquery-1.11.3.min.js"></script>
+
+    <script src="../js/experiments/zerthis.js"></script>
+    
+    
+</head>
+
+<body>
+    <div id="p5Canvas"></div>
+
+    <div id="zerthis" class="p5Canvas"></div>
+    <div class="p5Box">
+        <h3 class="sourceCodeButton">source<br>{...}</h3>
+        <div class="formattedCode">
+                <!-- HTML generated using hilite.me -->
+                <div style="background: #f8f8f8; overflow:scroll;width:auto;height:480px;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
+                    <pre style="margin: 0; line-height: 125%"><span style="color: #408080; font-style: italic">/*</span>
+<span style="color: #408080; font-style: italic">Zerthis</span>
+<span style="color: #408080; font-style: italic">Procedural &quot;snake&quot; animation with simple AI.</span>
+<span style="color: #408080; font-style: italic">Theodore Michels 2015</span>
+<span style="color: #408080; font-style: italic">Last updated: 07/11/2015</span>
+<span style="color: #408080; font-style: italic">*/</span>
+
+<span style="color: #408080; font-style: italic">// Put this in a function instance so that everything is out of the global namespace</span>
+<span style="color: #008000; font-weight: bold">var</span> zerthis <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> (z) {
+    <span style="color: #408080; font-style: italic">/******** APPEARANCE ********/</span>
+    <span style="color: #008000; font-weight: bold">var</span> numSegments <span style="color: #666666">=</span> <span style="color: #666666">30</span>;
+    <span style="color: #008000; font-weight: bold">var</span> segmentDistance <span style="color: #666666">=</span> <span style="color: #666666">10.0</span>;
+    <span style="color: #008000; font-weight: bold">var</span> bodyLength <span style="color: #666666">=</span> numSegments <span style="color: #666666">*</span> (segmentDistance <span style="color: #666666">-</span> <span style="color: #666666">1</span>);
+
+    <span style="color: #408080; font-style: italic">/******** MOVEMENT ********/</span>
+    <span style="color: #008000; font-weight: bold">var</span> onTheMove <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+    <span style="color: #408080; font-style: italic">// The amplitude of the sinusoidal motion - varies with distance from the target.</span>
+    <span style="color: #008000; font-weight: bold">var</span> motionAmplitude <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+    <span style="color: #408080; font-style: italic">// The maximum amplitude of the sinusoidal motion.</span>
+    <span style="color: #008000; font-weight: bold">var</span> ampMax <span style="color: #666666">=</span> bodyLength <span style="color: #666666">/</span> <span style="color: #666666">6</span>;
+
+    <span style="color: #408080; font-style: italic">// forwardVector always points from the sinusoidal motion&#39;s 0 crossing to the destination</span>
+    <span style="color: #408080; font-style: italic">// (It oscillates around this vector)</span>
+    <span style="color: #008000; font-weight: bold">var</span> forwardVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector();
+    <span style="color: #008000; font-weight: bold">var</span> acceleration <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector();
+    <span style="color: #008000; font-weight: bold">var</span> accelCounter <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector();
+    <span style="color: #008000; font-weight: bold">var</span> topSpeed <span style="color: #666666">=</span> <span style="color: #666666">3.0</span>;
+    <span style="color: #008000; font-weight: bold">var</span> movementCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+    <span style="color: #008000; font-weight: bold">var</span> sineCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+    <span style="color: #408080; font-style: italic">// A vector perpendicular to the &quot;head&quot; - used for sinusoidal motion</span>
+    <span style="color: #008000; font-weight: bold">var</span> sineVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector();
+
+    <span style="color: #408080; font-style: italic">// Positions of each body segment</span>
+    <span style="color: #008000; font-weight: bold">var</span> positions <span style="color: #666666">=</span> [];
+    <span style="color: #408080; font-style: italic">// Where each segment would like to go</span>
+    <span style="color: #008000; font-weight: bold">var</span> destinations <span style="color: #666666">=</span> [];
+    <span style="color: #408080; font-style: italic">// Where is the snake (head) trying to go?</span>
+    <span style="color: #008000; font-weight: bold">var</span> destination <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector();
+
+    <span style="color: #408080; font-style: italic">/******** OTHER ********/</span>
+    <span style="color: #008000; font-weight: bold">var</span> food <span style="color: #666666">=</span> [];
+    <span style="color: #008000; font-weight: bold">var</span> closestFood;
+    <span style="color: #008000; font-weight: bold">var</span> foodsEaten <span style="color: #666666">=</span> [];
+
+    <span style="color: #008000; font-weight: bold">var</span> numFloaters <span style="color: #666666">=</span> <span style="color: #666666">100</span>;
+    <span style="color: #008000; font-weight: bold">var</span> floaters <span style="color: #666666">=</span> [];
+
+    <span style="color: #008000; font-weight: bold">var</span> eyePulseCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+    <span style="color: #408080; font-style: italic">// How quickly does the creature drift downward?</span>
+    <span style="color: #008000; font-weight: bold">var</span> creatureGravity <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">0.0</span>, <span style="color: #666666">0.5</span>);
+
+    <span style="color: #008000; font-weight: bold">var</span> canvas
+    z.setup <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        canvas <span style="color: #666666">=</span> z.createCanvas(z.windowWidth, <span style="color: #666666">480</span>);
+        canvas.mousePressed(addFood); <span style="color: #408080; font-style: italic">// Add mousePressed listener</span>
+        z.smooth();
+
+        <span style="color: #408080; font-style: italic">// Initialize segments from top to bottom in the middle of the screen</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numSegments; i<span style="color: #666666">++</span>) {
+            positions[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(z.width <span style="color: #666666">/</span> <span style="color: #666666">2</span>, segmentDistance <span style="color: #666666">*</span> i);
+        }
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numFloaters; i<span style="color: #666666">++</span>) {
+            floaters[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Floater(z.random(z.width), z.random(z.height));
+        }
+    }
+
+    z.draw <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+        z.background(<span style="color: #666666">255</span>);
+        z.stroke(<span style="color: #666666">0</span>, <span style="color: #666666">20</span>);
+        z.line(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, z.width, <span style="color: #666666">0</span>);
+        z.line(<span style="color: #666666">0</span>, z.height, z.width, z.height);
+        <span style="color: #408080; font-style: italic">/******** AUTO MOVEMENT ********/</span>
+        <span style="color: #408080; font-style: italic">// Get the last position element in the array (the head) for simplicity - it&#39;s used a lot elsewhere...</span>
+        <span style="color: #008000; font-weight: bold">var</span> headVector <span style="color: #666666">=</span> positions[positions.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>].copy();
+
+        <span style="color: #408080; font-style: italic">// If the head is at the bottom of the screen (and the creature isn&#39;t already moving)</span>
+        <span style="color: #408080; font-style: italic">// then move towards a random spot at the top of the screen.</span>
+        <span style="color: #008000; font-weight: bold">if</span> (headVector.y <span style="color: #666666">&gt;</span> z.height <span style="color: #666666">-</span> <span style="color: #666666">40</span> <span style="color: #666666">&amp;&amp;</span> <span style="color: #666666">!</span>onTheMove) {
+            forwardVector <span style="color: #666666">=</span> headVector.copy();
+            movementCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+            sineCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+            onTheMove <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+            <span style="color: #408080; font-style: italic">// Pick a random destination at the top of the screen.</span>
+            destination <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(z.random(<span style="color: #666666">0</span>, z.width), z.random(<span style="color: #666666">0</span>, z.height <span style="color: #666666">/</span> <span style="color: #666666">4</span>));
+        }
+
+        <span style="color: #408080; font-style: italic">/******** FOOD FINDING ********/</span>
+        <span style="color: #008000; font-weight: bold">if</span> (food.length <span style="color: #666666">&gt;</span> <span style="color: #666666">0</span>) { <span style="color: #408080; font-style: italic">// If there is any food, then go get it!</span>
+            onTheMove <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">true</span>;
+            closestFood <span style="color: #666666">=</span> food[<span style="color: #666666">0</span>];
+
+            <span style="color: #008000; font-weight: bold">if</span> (food.length <span style="color: #666666">&gt;</span> <span style="color: #666666">1</span>) { <span style="color: #408080; font-style: italic">// If there&#39;s more than 1 food, then find the closest one.</span>
+                <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> food.length; i<span style="color: #666666">++</span>) {
+                    <span style="color: #008000; font-weight: bold">if</span> (headVector.dist(food[i].position) <span style="color: #666666">&lt;</span> headVector.dist(closestFood.position)) {
+                        closestFood <span style="color: #666666">=</span> food[i];
+                    }
+                }
+            }
+
+            destination <span style="color: #666666">=</span> closestFood.position.copy(); <span style="color: #408080; font-style: italic">// The destination is now the closest piece of food.</span>
+            <span style="color: #408080; font-style: italic">// If close enough to the food, then &quot;eat&quot; it.</span>
+            <span style="color: #008000; font-weight: bold">if</span> (headVector.dist(destination) <span style="color: #666666">&lt;</span> <span style="color: #666666">2.0</span>) {
+                foodsEaten.push(closestFood);
+                food.splice(food.indexOf(closestFood), <span style="color: #666666">1</span>);
+            }
+        }
+
+        <span style="color: #408080; font-style: italic">/******** MOVEMENT ********/</span>
+        <span style="color: #008000; font-weight: bold">if</span> (<span style="color: #666666">!</span>onTheMove) {
+            forwardVector <span style="color: #666666">=</span> headVector; <span style="color: #408080; font-style: italic">// If not moving, constantly set the forwardVector to the head&#39;s position</span>
+        }
+        <span style="color: #008000; font-weight: bold">if</span> (onTheMove) {
+            <span style="color: #408080; font-style: italic">// The movement counter affects the amplitude of sinusoidal motion (it&#39;s clamped from 0 to 1)</span>
+            movementCounter <span style="color: #666666">+=</span> <span style="color: #666666">0.002</span>; <span style="color: #408080; font-style: italic">// Effectively, sinusoidal acceleration...</span>
+            <span style="color: #008000; font-weight: bold">if</span> (movementCounter <span style="color: #666666">&gt;</span> <span style="color: #666666">1</span>) {
+                movementCounter <span style="color: #666666">=</span> <span style="color: #666666">1</span>;
+            }
+            <span style="color: #408080; font-style: italic">// Increment other counters while moving.</span>
+            sineCounter <span style="color: #666666">+=</span> <span style="color: #666666">0.1</span>;
+            accelCounter <span style="color: #666666">+=</span> <span style="color: #666666">0.07</span>;
+            eyePulseCounter <span style="color: #666666">+=</span> <span style="color: #666666">0.2</span>;
+
+            <span style="color: #408080; font-style: italic">// If the current destination has already been reached (by checking distance), reset the counters and movement status.</span>
+            <span style="color: #008000; font-weight: bold">if</span> (headVector.dist(destination) <span style="color: #666666">&lt;</span> <span style="color: #666666">2.0</span>) {
+                sineCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+                accelCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+                movementCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+                onTheMove <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span>;
+            } <span style="color: #008000; font-weight: bold">else</span> { <span style="color: #408080; font-style: italic">// Otherwise, move towards the destination</span>
+                forwardVelocity <span style="color: #666666">=</span> destination.copy(); <span style="color: #408080; font-style: italic">// Copy the destination vector</span>
+                forwardVelocity.sub(forwardVector); <span style="color: #408080; font-style: italic">// Subtract the head position from it to get a vector pointing from the head to the target.</span>
+
+                sineVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">-</span>forwardVelocity.y, forwardVelocity.x); <span style="color: #408080; font-style: italic">// Perpendicular to forwardVelocity</span>
+
+                forwardVelocity.normalize();
+
+                <span style="color: #008000; font-weight: bold">if</span> (accelCounter <span style="color: #666666">&lt;</span> topSpeed) {
+                    forwardVelocity.mult(accelCounter);
+                } <span style="color: #008000; font-weight: bold">else</span> {
+                    forwardVelocity.mult(topSpeed);
+                }
+                forwardVector.add(forwardVelocity); <span style="color: #408080; font-style: italic">// Add to move the forward vector towards the target</span>
+                <span style="color: #408080; font-style: italic">// How much should the creature oscillate?</span>
+                <span style="color: #408080; font-style: italic">// First of all, it should oscillate less as it approaches its destination.</span>
+                <span style="color: #408080; font-style: italic">// It also takes time to get up to speed (via movementCounter)</span>
+                motionAmplitude <span style="color: #666666">=</span> forwardVector.dist(destination) <span style="color: #666666">*</span> movementCounter;
+
+                <span style="color: #008000; font-weight: bold">if</span> (motionAmplitude <span style="color: #666666">&gt;</span> ampMax) {
+                    motionAmplitude <span style="color: #666666">=</span> ampMax; <span style="color: #408080; font-style: italic">// Clamp to the maximum.</span>
+                }
+
+                sineVector.normalize();
+                sineVector.mult(z.sin(sineCounter) <span style="color: #666666">*</span> motionAmplitude); <span style="color: #408080; font-style: italic">// Multiply by the amplitude and add to the forward vector.</span>
+                sineVector.add(forwardVector);
+                <span style="color: #408080; font-style: italic">// Set the last position in the array (the head) to the sineVector (all others will follow)</span>
+                positions[numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span>].set(sineVector);
+            }
+        }
+        <span style="color: #408080; font-style: italic">// Each segment&#39;s destination is the NEXT segment&#39;s current POSITION.</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span>; i<span style="color: #666666">++</span>) {
+            destinations[i] <span style="color: #666666">=</span> positions[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>];
+        }
+
+        <span style="color: #408080; font-style: italic">/******** DISPLAY ********/</span>
+        <span style="color: #408080; font-style: italic">// Contains the positions of each body segment&#39;s perpendicular &quot;vertices&quot;</span>
+        <span style="color: #008000; font-weight: bold">var</span> sideVectorsR <span style="color: #666666">=</span> [];
+        <span style="color: #008000; font-weight: bold">var</span> sideVectorsL <span style="color: #666666">=</span> [];
+        <span style="color: #408080; font-style: italic">// Look through each body position...</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> positions.length; i<span style="color: #666666">++</span>) {
+            positions[i].add(creatureGravity); <span style="color: #408080; font-style: italic">// Add the external &quot;force&quot;</span>
+            <span style="color: #008000; font-weight: bold">var</span> ellipseSize <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+
+            <span style="color: #008000; font-weight: bold">if</span> (i <span style="color: #666666">!=</span> positions.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>) { <span style="color: #408080; font-style: italic">// For all other positions (besides the head)</span>
+                z.stroke(<span style="color: #666666">20</span>, <span style="color: #666666">220</span>, <span style="color: #666666">120</span>, <span style="color: #666666">100</span>); <span style="color: #408080; font-style: italic">// Draw a central line</span>
+                z.line(positions[i].x, positions[i].y, positions[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].x, positions[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].y);
+
+                <span style="color: #408080; font-style: italic">/******** SEGMENT FOLLOWING ********/</span>
+                <span style="color: #008000; font-weight: bold">var</span> segmentMove <span style="color: #666666">=</span> destinations[i].copy();
+                segmentMove.sub(positions[i]); <span style="color: #408080; font-style: italic">// Vector pointing from this segment to it&#39;s destination</span>
+
+                <span style="color: #408080; font-style: italic">// This feels hackey...basically, while the segment is too far from its destination...</span>
+                <span style="color: #408080; font-style: italic">// Move towards it&#39;s destination.</span>
+                <span style="color: #008000; font-weight: bold">while</span> (segmentMove.mag() <span style="color: #666666">&gt;</span> segmentDistance) {
+                    segmentMove.normalize();
+                    segmentMove.mult(<span style="color: #666666">0.01</span>);
+                    positions[i].add(segmentMove);
+                    segmentMove <span style="color: #666666">=</span> destinations[i].copy();
+                    segmentMove.sub(positions[i]);
+                }
+                <span style="color: #408080; font-style: italic">// Segments are larger near the head</span>
+                ellipseSize <span style="color: #666666">=</span> i <span style="color: #666666">/</span> <span style="color: #666666">2</span>;
+
+                <span style="color: #408080; font-style: italic">/******** SIDE VECTORS ********/</span>
+                <span style="color: #008000; font-weight: bold">var</span> nextVec <span style="color: #666666">=</span> positions[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].copy(); <span style="color: #408080; font-style: italic">// Get the next position in the array</span>
+                nextVec.sub(positions[i]); <span style="color: #408080; font-style: italic">// Get a vector pointing to it.</span>
+
+                <span style="color: #008000; font-weight: bold">var</span> sideVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">-</span>nextVec.y, nextVec.x); <span style="color: #408080; font-style: italic">// Then get its perpendicular vector</span>
+                sideVector.normalize(); <span style="color: #408080; font-style: italic">// Resize...</span>
+                sideVector.mult(ellipseSize);
+
+                <span style="color: #008000; font-weight: bold">var</span> sideVectorOpp <span style="color: #666666">=</span> sideVector.copy();
+                sideVectorOpp.mult(<span style="color: #666666">-1</span>); <span style="color: #408080; font-style: italic">// Then get the vector on the opposite side</span>
+                <span style="color: #408080; font-style: italic">// Add to the arrays.</span>
+                sideVector.add(positions[i]);
+                sideVectorOpp.add(positions[i]);
+
+                sideVectorsR[i] <span style="color: #666666">=</span> sideVector.copy();
+                sideVectorsL[i] <span style="color: #666666">=</span> sideVectorOpp.copy();
+
+                z.stroke(<span style="color: #666666">0</span>, <span style="color: #666666">100</span>);
+                z.line(sideVector.x, sideVector.y, sideVectorOpp.x, sideVectorOpp.y); <span style="color: #408080; font-style: italic">// A line connecting the two sides</span>
+
+                <span style="color: #408080; font-style: italic">/******** FOOD COLORING ********/</span>
+                <span style="color: #408080; font-style: italic">// Change color of body segments based on food eaten.</span>
+                <span style="color: #408080; font-style: italic">// Because the head is actually the last element in the array, this part ends up being a little hackey...				</span>
+                <span style="color: #008000; font-weight: bold">if</span> (numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span> <span style="color: #666666">-</span> foodsEaten.length <span style="color: #666666">&lt;=</span> i) { <span style="color: #408080; font-style: italic">// -1 for the head...</span>
+                    <span style="color: #008000; font-weight: bold">if</span> (i <span style="color: #666666">+</span> <span style="color: #666666">1</span> <span style="color: #666666">&gt;=</span> numSegments <span style="color: #666666">-</span> foodsEaten.length) {
+                        <span style="color: #408080; font-style: italic">// Fills in colors in reverse order, like beads onto a string.</span>
+                        z.fill(foodsEaten[foodsEaten.length <span style="color: #666666">-</span> (numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span> <span style="color: #666666">-</span> i)].foodColor);
+                    }
+                } <span style="color: #008000; font-weight: bold">else</span> {
+                    z.noFill(); <span style="color: #408080; font-style: italic">// otherwise, the segment is empty</span>
+                }
+                z.ellipse(positions[i].x, positions[i].y, ellipseSize, ellipseSize); <span style="color: #408080; font-style: italic">// Draw ellipses for each body segment.</span>
+            }
+        }
+        <span style="color: #008000; font-weight: bold">if</span> (onTheMove) { <span style="color: #408080; font-style: italic">// If moving, pulse the eye</span>
+            z.fill(<span style="color: #666666">20</span>, <span style="color: #666666">220</span>, <span style="color: #666666">120</span>, <span style="color: #666666">128</span> <span style="color: #666666">*</span> z.sin(eyePulseCounter));
+        } <span style="color: #008000; font-weight: bold">else</span> {
+            z.noFill();
+        }
+        z.ellipse(headVector.x, headVector.y, <span style="color: #666666">10</span>, <span style="color: #666666">10</span>); <span style="color: #408080; font-style: italic">// The eye</span>
+
+        <span style="color: #408080; font-style: italic">/******** SIDES ********/</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> sideVectorsR.length; i<span style="color: #666666">++</span>) {
+            <span style="color: #008000; font-weight: bold">if</span> (i <span style="color: #666666">!=</span> sideVectorsR.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>) {
+                z.line(sideVectorsR[i].x, sideVectorsR[i].y, sideVectorsR[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].x, sideVectorsR[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].y);
+                z.line(sideVectorsL[i].x, sideVectorsL[i].y, sideVectorsL[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].x, sideVectorsL[i <span style="color: #666666">+</span> <span style="color: #666666">1</span>].y);
+            }
+        }
+
+        <span style="color: #408080; font-style: italic">/******** HEAD ********/</span>
+        <span style="color: #008000; font-weight: bold">var</span> noseVector <span style="color: #666666">=</span> positions[numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span>].copy(); <span style="color: #408080; font-style: italic">// Find a point just ahead of the...head (the nose)</span>
+        noseVector.sub(positions[numSegments <span style="color: #666666">-</span> <span style="color: #666666">2</span>]);
+        noseVector.normalize();
+        noseVector.mult(<span style="color: #666666">40</span>);
+        noseVector.add(positions[numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span>]);
+        <span style="color: #408080; font-style: italic">// Line through middle of nose</span>
+        z.line(positions[numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span>].x, positions[numSegments <span style="color: #666666">-</span> <span style="color: #666666">1</span>].y, noseVector.x, noseVector.y);
+        <span style="color: #408080; font-style: italic">// Sides of the head</span>
+        z.line(sideVectorsR[sideVectorsR.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>].x, sideVectorsR[sideVectorsR.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>].y, noseVector.x, noseVector.y);
+        z.line(sideVectorsL[sideVectorsL.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>].x, sideVectorsL[sideVectorsL.length <span style="color: #666666">-</span> <span style="color: #666666">1</span>].y, noseVector.x, noseVector.y);
+
+        <span style="color: #408080; font-style: italic">/******** FOOD &amp; PARTICLES********/</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> food.length; i<span style="color: #666666">++</span>) { <span style="color: #408080; font-style: italic">// Draw all of the food.</span>
+            food[i].update();
+            food[i].display();
+        }
+
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> floaters.length; i<span style="color: #666666">++</span>) {
+            floaters[i].update();
+            floaters[i].display();
+            <span style="color: #408080; font-style: italic">// If the floater dies or is offscreen, reset it.</span>
+            <span style="color: #008000; font-weight: bold">if</span> (floaters[i].currentLifeTime <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> floaters[i].position.y <span style="color: #666666">&gt;</span> z.height) {
+                floaters[i] <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Floater(z.random(z.width), z.random(<span style="color: #666666">-5</span>, <span style="color: #666666">-40</span>));
+            }
+        }
+    }
+
+    <span style="color: #408080; font-style: italic">/******** CLASSES ********/</span>
+    <span style="color: #008000; font-weight: bold">function</span> Food(x, y) {
+
+            <span style="color: #008000; font-weight: bold">this</span>.position <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(x, y);
+            <span style="color: #008000; font-weight: bold">this</span>.size <span style="color: #666666">=</span> z.random(<span style="color: #666666">8.0</span>, <span style="color: #666666">18.0</span>);
+            <span style="color: #008000; font-weight: bold">this</span>.spinCounter <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+            <span style="color: #008000; font-weight: bold">this</span>.spinSpeed <span style="color: #666666">=</span> z.random(<span style="color: #666666">0.01</span>, <span style="color: #666666">0.1</span>);
+
+            <span style="color: #008000; font-weight: bold">this</span>.gravity <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">0.0</span>, z.random(<span style="color: #666666">0.1</span>, <span style="color: #666666">0.5</span>));
+
+            <span style="color: #008000; font-weight: bold">this</span>.foodColor <span style="color: #666666">=</span> z.color(z.random(<span style="color: #666666">0</span>, <span style="color: #666666">255</span>), z.random(<span style="color: #666666">0</span>, <span style="color: #666666">255</span>), z.random(<span style="color: #666666">0</span>, <span style="color: #666666">255</span>), <span style="color: #666666">128</span>);
+
+            <span style="color: #008000; font-weight: bold">this</span>.update <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+                <span style="color: #008000; font-weight: bold">this</span>.spinCounter <span style="color: #666666">+=</span> <span style="color: #008000; font-weight: bold">this</span>.spinSpeed;
+                <span style="color: #008000; font-weight: bold">this</span>.position.add(<span style="color: #008000; font-weight: bold">this</span>.gravity);
+            }
+
+            <span style="color: #008000; font-weight: bold">this</span>.display <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+                z.noFill();
+                z.push(); <span style="color: #408080; font-style: italic">// Use push and pop to isolate the rotation.</span>
+                z.translate(<span style="color: #008000; font-weight: bold">this</span>.position.x, <span style="color: #008000; font-weight: bold">this</span>.position.y);
+                z.rotate(<span style="color: #008000; font-weight: bold">this</span>.spinCounter);
+                z.line(<span style="color: #666666">-10</span>, <span style="color: #666666">0</span>, <span style="color: #666666">10</span>, <span style="color: #666666">0</span>);
+                z.line(<span style="color: #666666">0</span>, <span style="color: #666666">15</span>, <span style="color: #666666">0</span>, <span style="color: #666666">-15</span>);
+
+                z.fill(<span style="color: #008000; font-weight: bold">this</span>.foodColor);
+                z.ellipse(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, <span style="color: #008000; font-weight: bold">this</span>.size, <span style="color: #008000; font-weight: bold">this</span>.size);
+                z.pop();
+            }
+        }
+        <span style="color: #408080; font-style: italic">// Floating particles (just for show)</span>
+    <span style="color: #008000; font-weight: bold">function</span> Floater(x, y) {
+        <span style="color: #008000; font-weight: bold">this</span>.position <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(x, y);
+        <span style="color: #008000; font-weight: bold">this</span>.size <span style="color: #666666">=</span> z.random(<span style="color: #666666">2</span>, <span style="color: #666666">5</span>);
+        <span style="color: #008000; font-weight: bold">this</span>.gravity <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5.Vector(<span style="color: #666666">0.0</span>, z.random(<span style="color: #666666">0.1</span>, <span style="color: #666666">0.5</span>)); <span style="color: #408080; font-style: italic">// Random &quot;gravities&quot; help create depth.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.maxLifeTime <span style="color: #666666">=</span> z.random(<span style="color: #666666">1000.0</span>, <span style="color: #666666">3000.0</span>); <span style="color: #408080; font-style: italic">// Used for fading out.</span>
+        <span style="color: #008000; font-weight: bold">this</span>.currentLifeTime <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.maxLifeTime;
+
+        <span style="color: #008000; font-weight: bold">this</span>.update <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+            <span style="color: #008000; font-weight: bold">this</span>.position.add(<span style="color: #008000; font-weight: bold">this</span>.gravity);
+            <span style="color: #008000; font-weight: bold">this</span>.currentLifeTime <span style="color: #666666">-=</span> <span style="color: #666666">1</span>;
+        }
+        <span style="color: #008000; font-weight: bold">this</span>.display <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> () {
+            z.noStroke();
+            z.fill(<span style="color: #666666">0</span>, <span style="color: #666666">65</span> <span style="color: #666666">*</span> (<span style="color: #008000; font-weight: bold">this</span>.currentLifeTime <span style="color: #666666">/</span> <span style="color: #008000; font-weight: bold">this</span>.maxLifeTime));
+            z.ellipse(<span style="color: #008000; font-weight: bold">this</span>.position.x, <span style="color: #008000; font-weight: bold">this</span>.position.y, <span style="color: #008000; font-weight: bold">this</span>.size, <span style="color: #008000; font-weight: bold">this</span>.size);
+        }
+    }
+
+    <span style="color: #008000; font-weight: bold">function</span> mousePressed() {}
+
+    <span style="color: #008000; font-weight: bold">function</span> addFood() {
+        food.push(<span style="color: #008000; font-weight: bold">new</span> Food(z.mouseX, z.mouseY)); <span style="color: #408080; font-style: italic">// Add food whenever the mouse is pressed.</span>
+    }
+}
+
+<span style="color: #008000; font-weight: bold">var</span> p5_z <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> p5(zerthis, <span style="color: #BA2121">&quot;zerthis&quot;</span>);
+</pre>
+                </div>
+            </div>
+        <p class="description">Overall I'm pretty happy with how this animation turned out - it's generally pretty organic. It's basically achieved by applying a sinusoidal oscillation around the forward vector (vector pointing from the head to the target). There are still some issues though - it could use a bit of deceleration on approach, and it could really use a steering algorithm to prevent it from jerking when it finds a new target. The implementation for segment following is a little hackey, but I actually like the "expanding/contracting" effect it gives to the animation.
+        </p>
+    </div>
+    
+    <script>
+
+        $(".sourceCodeButton").click(function () {
+
+            if ($(this).siblings(".formattedCode").css("display") == "none") {
+                $(this).siblings(".formattedCode").slideDown();
+            } else {
+                $(this).siblings(".formattedCode").slideUp();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
