@@ -7,7 +7,7 @@ Last updated: 07/12/2015
 
 // Put this in a function instance so that everything is out of the global namespace
 var raycastBG = function (r) {
-    var numLines = 100; // How many lines at once?
+    var numLines = 30; // How many lines at once?
     var rays = []; // Contains all of the "LineRay" objects.
 
     var rotationAngle = 135.0; // Angle to rotate all of the lines.
@@ -23,6 +23,7 @@ var raycastBG = function (r) {
         for (var i = 0; i < numLines; i++) {
             rays[i] = new LineRay();
             rays[i].init();
+            rays[i].currentLerpPoint = 0.9;
         }
     }
 
@@ -32,6 +33,7 @@ var raycastBG = function (r) {
         /******** RAYS ********/
         // Translate rays to the center for easy rotation around a central point.
         r.push();
+        rotationAngle = 30 + $(window).scrollTop()/15.0;
         r.translate(r.width / 2, r.height / 2);
         r.rotate(r.radians(rotationAngle));
         for (var i = 0; i < numLines; i++) {
@@ -40,7 +42,9 @@ var raycastBG = function (r) {
         r.pop();
 
     }
-
+    r.windowResized = function(){
+        r.resizeCanvas(r.windowWidth, r.windowHeight);
+    }
     /******** CLASSES ********/
     function LineRay() {
         this.lineWidth;
@@ -59,7 +63,7 @@ var raycastBG = function (r) {
         this.init = function () {
             this.reset = false;
 
-            this.lineWidth = r.random(2, 20);
+            this.lineWidth = r.random(5, 30);
             this.lineSpeed = r.random(0.001, 0.005);
 
             this.currentLerpPoint = 0.0;
